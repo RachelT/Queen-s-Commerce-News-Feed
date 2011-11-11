@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+  * Copyright (c) 2011 Draco Li. All rights reserved.
+-->
+
+<!--
+@fileoverview Contains script for running at the background to open up the options page when the extension is reloaded
+-->
+<html>
+  <body>
+    <script>
+      // Retreves value from local storage if found.
+      var isInstalled = window.localStorage.getItem('isInstalled');
+      
+      // Runs options page if extension is not installed
+      if (!isInstalled) {
+        var optionsPageURL = chrome.extension.getURL('/views/options.html');
+        chrome.tabs.create({url: optionsPageURL});
+        window.localStorage.setItem('isInstalled', '1');
+      }
+      
+      function fetch_feed(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+         if (xhr.readyState == 4) {
+           if(xhr.status == 200) {
+             var data = xhr.responseText;
+             callback(data);
+           }else {
+             callback(null);
+           }
+         } 
+        }
+        xhr.open('GET', url, true);
+        xhr.send();
+      }
+      
+      function onRequest(request, sender, callback) {
+        if (request.action == 'fetch_feed') {
+          fetch_feed(request.url, callback);
+        }
+      }
+      chrome.extension.onRequest.addListener(onRequest);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "Queen's Commerce Feeds",
+  "version": "1.0",
+  "description": "A quick way to browse feeds from the Commerce Portal",
+  "icons": {
+    "16": "images/icon.png",
+    "48": "images/48.png",
+    "128": "images/128.png"
+  },
+  "background_page": "views/background.html",
+  "permissions": ["https://commerce.queensu.ca/commerce/2006/commerce.nsf/*"],
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "views/feed.html",
+    "default_title": "Commerce Feeds"
+  },
+  "options_page": "views/options.html",
+  "homepage_url": "http://www.dracoli.com/",
+}

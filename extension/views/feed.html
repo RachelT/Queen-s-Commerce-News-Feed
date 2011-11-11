@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--
+  * Copyright (c) 2011 Draco Li. All rights reserved.
+-->
+
+<!--
+@fileoverview This files serves as the pop-up page for showing feeds according to the settings saved in the options page.
+@author draco@dracoli.com (Draco Li)
+-->
+<html>
+<head>
+<link rel="stylesheet" href="/css/feed.css" />
+</head>
+<body>
+  <div id="content">
+    
+  <div>
+  
+  <script src='/javascript/jquery-1.6.1.min.js'></script>
+  <script src='/javascript/parser.js'></script>
+  <script src="/javascript/feeds.js" />
+  <script>
+    $(document).ready(function() {
+      fetch_feed();
+    });
+  </script>
+</body>
+</html>
