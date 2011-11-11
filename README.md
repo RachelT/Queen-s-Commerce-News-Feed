@@ -11,11 +11,11 @@ Usage
 2. Click "Load unpacked extension"
 3. Select the downloaded project folder
 4. Enable the extension
-5. Email [Draco](www.dracoli.com) to tell him he's awesome
+5. Email [Draco](http://www.dracoli.com/#/contact-me) to tell him he's awesome
 
 License
 -------
 
-Copyright 2011 [Draken Solutions](www.drakensolutions.com)
+Copyright 2011 [Draken Solutions](http://www.drakensolutions.com)
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
