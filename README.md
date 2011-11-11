@@ -10,8 +10,8 @@ Usage
 1. Open your chrome
 2. Click "Load unpacked extension"
 3. Select the downloaded project folder
-4. Enable it
-5. Email [Draco](www.dracoli.com) to tell him his awesome
+4. Enable the extension
+5. Email [Draco](www.dracoli.com) to tell him he's awesome
 
 License
 -------
