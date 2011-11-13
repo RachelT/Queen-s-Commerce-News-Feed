@@ -1,0 +1,63 @@
+@import "bootstrap.less";
+
+// General popup layout
+body {
+	overflow-x: hidden;
+	margin: 0;
+	padding: 0;
+	#font > .sans-serif();
+	
+	#content {
+		width: 450px;
+		padding: 10px 0px 10px 5px;
+		
+		#feeds {
+			overflow-y: scroll;
+			height: 100%;
+		}
+		
+		#feedContent {
+			width: 100%;
+			overflow-y: scroll;
+			.transition(height all linear .3);
+		}
+	}
+}
+
+// Section layout
+section {
+	
+	.sectionHeader {
+		background-color: #EEE;
+		padding-left: 10px;
+		
+		&h4 small {
+			color: darken(@grayLighter, 20%);
+		}
+	}
+	
+	ul.sectionContent {
+		padding-left: 10px;
+		margin-top: 5px;
+		
+		&li.feed {
+			font-weight: normal;
+			padding-left: 10px;
+			margin-top: 4px;
+			padding-bottom: 3px;
+			border-bottom: 1px solid darken(@grayLighter, 20%);
+			
+			&:last-child {
+				border-bottom: none;
+				padding-bottom: 0;
+			}
+			&a {
+				width: 380px;
+				display: block;
+			}
+			&.read {
+				font-weight: bold;
+			}
+		}
+	}
+}

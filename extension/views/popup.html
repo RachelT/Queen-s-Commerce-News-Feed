@@ -9,18 +9,26 @@
 -->
 <html>
 <head>
-<link rel="stylesheet" href="/css/feed.css" />
+<link rel="stylesheet" href="/css/bootstrap.css" />
+<link rel="stylesheet" href="/css/popup.css" />
 </head>
 <body>
   <div id="content">
-    
-  <div>
-  <script src='/javascript/jquery-1.6.1.min.js'></script>
-  <script src='/javascript/parser.js'></script>
-  <script src="/javascript/feeds.js" />
+    <div id="feeds">
+      
+    </div>
+    <div id="feedContent">
+      
+    </div>
+  </div>
+  <script src="/javascript/jquery-1.6.1.min.js"></script>
+  <script src="/javascript/feeds.js"></script>
   <script>
     $(document).ready(function() {
       fetch_feed();
+      $(".feed a").live('click', function() {
+        // Grab and update the feed content
+      });
     });
   </script>
 </body>
