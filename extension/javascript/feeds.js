@@ -54,19 +54,44 @@ function display_feeds(feeds) {
 										<div class="sectionHeader"> \
 											<h4>' + oneKey + '<small class="stats"> \
 											' + catFeeds.length + ' Feeds</small></h4> \
-										</div> \
-										<ul class="sectionContent unstyled"> \
-										</ul> \
-									</section>';
+											' + createSectionUtils() + ' \
+										</div>';
+		
+		// Only add our feed content section if we have content
+		// This is to avoid the empty space between empty sections
+		if (catFeeds.length > 0) {
+			sectionHTML += '<ul class="sectionContent unstyled"> \
+										  </ul> \
+											</section>';
+		}
+		
 		$('#content #feeds').append(sectionHTML);
 		
 		// Add feeds in the section
 		for (var i = 0; i < catFeeds.length; i++) {
 			var feed = catFeeds[i],
 					html = '<li class="feed"> \
-										<a href="' + feed.url + '">' + feed.title + '</a> \
+										<h5> \
+											<a href="' + feed.url + '">' + feed.title + '</a> \
+											<small class="time">' + facebookTime(feed.date) + '</small> \
+										</h5> \
 								  </li>';
 			$('section:last .sectionContent').append(html);
 		}
 	}
+}
+
+function createSectionUtils() {
+	var html = '<span class="sectionUtils"> \
+								<span class="feedControls"> \
+									<image class="removeFeed" src="../images/minus_sign.png"/> \
+									<image class="addFeed" src="../images/plus_sign.png"/> \
+								</span> \
+							</span>';
+	return html;
+}
+
+// This method turns a timestamp into facebook like time. ex: 3hrs ago, 1 day ago
+function facebookTime() {
+	
 }

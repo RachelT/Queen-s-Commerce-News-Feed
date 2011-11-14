@@ -9,23 +9,38 @@
 -->
 <html>
 <head>
+<link rel="stylesheet" href="/css/smoothness/jquery-ui-1.8.16.custom.css" />
 <link rel="stylesheet" href="/css/bootstrap.css" />
 <link rel="stylesheet" href="/css/popup.css" />
 </head>
 <body>
   <div id="content">
     <div id="feeds">
-      
+      <div id="options">
+        <button class="btn small">sort</button>
+      </div>
     </div>
     <div id="feedContent">
       
     </div>
   </div>
   <script src="/javascript/jquery-1.6.1.min.js"></script>
+  <script src="/javascript/jquery-ui-1.8.16.custom.min.js"></script>
   <script src="/javascript/feeds.js"></script>
   <script>
     $(document).ready(function() {
       fetch_feed();
+      
+      // Disable header selection
+      $('.sectionHeader h4').disableSelection();
+      
+      // Open and collapse sections
+      $('.sectionHeader').live('click', function() {
+        // Close all curent 
+        $(this).next().toggle();
+      });
+      
+      // Show feed description
       $(".feed a").live('click', function() {
         // Grab and update the feed content
       });
