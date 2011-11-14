@@ -1,3 +1,4 @@
+@import "gmail.buttons.css";
 /*
   Bootstrap v1.1
   Variables and mixins to bootstrap any new web development project.
@@ -226,13 +227,16 @@ body {
   line-height: 20px;
 }
 body #content {
-  width: 480px;
+  width: 490px;
   padding: 5px 0px 0px 0px;
 }
 body #content #feeds {
   overflow-y: scroll;
   width: 100%;
   max-height: 300px;
+}
+body #content #feeds #options {
+  margin-bottom: 3px;
 }
 body #content #feedContent {
   overflow-y: scroll;
@@ -257,7 +261,7 @@ section .sectionHeader:after {
 section .sectionHeader h4 {
   float: left;
   cursor: pointer;
-  min-width: 200px;
+  min-width: 220px;
 }
 section .sectionHeader h4 small {
   color: #a6a6a6;

@@ -17,9 +17,12 @@
   <div id="content">
     <div id="feeds">
       <div id="options">
-        <button class="collapse btn small">collapse</button>
-        <button class="sortFeeds btn small">sort</button>
-        <button class="feedbacks btn small">feedbacks</button>
+        <a class="feedbacks button noSelect">Feedback</a>
+        <a class="collapse button noSelect">Collapse</a>
+        <a class="sortFeeds button noSelect">Sort</a>
+        
+        <!-- Some social buttons -->
+        
       </div>
     </div>
     <div id="feedContent">
@@ -32,26 +35,40 @@
   <script src="/javascript/feeds.js"></script>
   <script>
     $(document).ready(function() {
+      
+      // Fill in our content
       fetch_feed();
       
-      // Twipsy! Some tooltip for our controls
-      $('.feedControls img').twipsy({
-        fallback: 'Increase feeds'
-      })
-      
-      // Disable header selection
-      $('.sectionHeader h4').disableSelection();
-      
-      // Open and collapse sections
-      $('.sectionHeader').live('click', function() {
-        // Close all curent 
-        $(this).next().toggle();
+      // Twipsy! Some tooltips for our controls
+      $('.feedControls img.removeFeed').twipsy({
+        live: true,
+        placement: 'left',
+        fallback: '-1 max feed'
+      });
+      $('.feedControls img.addFeed').twipsy({
+        live: true,
+        placement: 'left',
+        fallback: '+1 max feed'
       });
       
-      // Show feed description
+      // Disable header selection
+      $('.noSelect').live($.support.selectstart ? "selectstart" : "mousedown", function( event ) {
+        event.preventDefault();
+  		});
+  			
+      // Toggle in and out sections
+      $('.sectionHeader h4').live('click', function() {
+        $(this).parent('.sectionHeader').next().toggle();
+      });
+      
+      // Show feed description upon click
       $(".feed a").live('click', function() {
         // Grab and update the feed content
       });
+      
+      // Handle category max configuration
+      
+      
     });
   </script>
 </body>

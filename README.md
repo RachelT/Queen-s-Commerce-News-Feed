@@ -7,7 +7,7 @@ News feed for Queen's Commerce is a chrome extension that provides an easy and q
 Usage
 -----
 
-** As of right now this extension is still under development, thus it not recommended to install it **
+_As of right now this extension is still under development. Thus, I do not recommended you to install it_
 
 1. Open your chrome
 2. Click "Load unpacked extension"

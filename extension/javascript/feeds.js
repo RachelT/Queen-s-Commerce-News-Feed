@@ -55,15 +55,15 @@ function display_feeds(feeds) {
 	
 	feeds = $.parseJSON(feeds);
 	for (var oneKey in feeds) {
-		// Get our content for this category
+		// Get our variables for this category
 		var catFeeds = feeds[oneKey],
-				maxFeeds = parseInt(window.localStorage.getItem(oneKey.replace(/\s/g, '').capitalize())),
+				maxFeeds = 10, //parseInt(window.localStorage.getItem(oneKey.replace(/\s/g, '').capitalize())),
 				totalFeeds = catFeeds.length,
 				sectionHTML = '<section>\
-												<div class="sectionHeader"> \
+												<div class="sectionHeader noSelect"> \
 													<h4>' + oneKey + '<small> \
-													<span class="totalFeeds">"' + totalFeeds + '</span> Feeds \
-													<span class="maxFeeds">' + maxFeeds + '</span></small></h4> \
+													<span class="totalFeeds">' + totalFeeds + '</span> Feeds (max \
+													<span class="maxFeeds">' + maxFeeds + '</span>)</small></h4> \
 													' + sectionUtilsHTML + ' \
 											 	</div>';
 		
@@ -78,7 +78,7 @@ function display_feeds(feeds) {
 		// Cache the new section into a variable since we inserting feeds later
 		// TODO: Test if we can move this to the beginning. Don't think we can do that
 		// 			 right now since we are finding something we just appended
-		var $newSection = $feedsSection.append(sectionHTML).find('.sectionContent');
+		var $newSection = $feedsSection.append(sectionHTML).find('.sectionContent:last');
 		
 		// Add feeds to the new section
 		for (var i = 0; i < totalFeeds; i++) {
@@ -86,7 +86,8 @@ function display_feeds(feeds) {
 					html = '<li class="feed"> \
 										<h5> \
 											<a href="' + feed.url + '">' + feed.title + '</a> \
-											<small class="time">' + facebookTime(feed.date) + '</small> \
+											<small class="time" data-timestamp="' + feed.date + '"> \
+											' + facebookTime(feed.date) + '</small> \
 										</h5> \
 								  </li>';
 			$newSection.append(html);
@@ -105,6 +106,38 @@ function createSectionUtils() {
 }
 
 // This method turns a timestamp into facebook like time. ex: 3hrs ago, 1 day ago
-function facebookTime() {
+function facebookTime(timestamp) {
+	var now = new Date(),
+			feedTime = new Date(timestamp * 1000), // Since javascript's time is in miliseconds
+			currentHour = now.getHours(),
+			feedHour = feedTime.getHours(),
+			currentMinutes = now.getMinutes(),
+			feedMinutes = feedTime.getMinutes();
+			
+	// Figure out if this time is within 1 day
+	if ( feedTime != now ) {
+		// Output number of days since feed
+		var dateDiff = getDateDifference(now, feedTime);
+		return dateDiff + 'd ago';
+	}
 	
+	// Figure out if this time is within hours
+	if ( currentHour != feedHour ) {
+		return (currentHour - feedHour) + 'hr ago';
+	}
+	
+	// Figure out if this time is within mintues
+	if ( currentMinutes != feedMinutes ) {
+		return (currentMinutes - feedMinutes) + 'min ago';
+	}
+	
+	// If days, hours, minutes all matches, then its now
+	return 'now';
+}
+
+function getDateDifference(newDate, oldDate) {
+	var diff = newDate - oldDate,
+			daysDiff = diff / 1000 / 60 / 60 / 24;
+	
+	return parseInt(daysDiff); // Round down
 }
