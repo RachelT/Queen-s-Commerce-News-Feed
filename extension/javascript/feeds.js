@@ -9,6 +9,13 @@ var FB_SHARE_URL = "http://www.facebook.com/sharer.php?u=";
 var TWITTER_SHARE_URL = "http://www.twitter.com/share?&url=";
 
 /**
+ * Utitlity prototype functions
+ */
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+/**
  * Opens new window either of facebook or twitter.
  * @param {String} id Specified whether to share news on Facebook or Twitter
  * @param {String} url Contains URL of the News to be shared.
@@ -43,32 +50,38 @@ function fetch_feed() {
 }
 
 function display_feeds(feeds) {
+	var sectionUtilsHTML = createSectionUtils(),
+			$feedsSection = $('#content #feeds');
+	
 	feeds = $.parseJSON(feeds);
 	for (var oneKey in feeds) {
 		// Get our content for this category
 		var catFeeds = feeds[oneKey],
-				sectionHTML = '';
-		
-		// Create new section - even if empty
-		sectionHTML = '<section>\
-										<div class="sectionHeader"> \
-											<h4>' + oneKey + '<small class="stats"> \
-											' + catFeeds.length + ' Feeds</small></h4> \
-											' + createSectionUtils() + ' \
-										</div>';
+				maxFeeds = parseInt(window.localStorage.getItem(oneKey.replace(/\s/g, '').capitalize())),
+				totalFeeds = catFeeds.length,
+				sectionHTML = '<section>\
+												<div class="sectionHeader"> \
+													<h4>' + oneKey + '<small> \
+													<span class="totalFeeds">"' + totalFeeds + '</span> Feeds \
+													<span class="maxFeeds">' + maxFeeds + '</span></small></h4> \
+													' + sectionUtilsHTML + ' \
+											 	</div>';
 		
 		// Only add our feed content section if we have content
 		// This is to avoid the empty space between empty sections
-		if (catFeeds.length > 0) {
+		if (totalFeeds > 0) {
 			sectionHTML += '<ul class="sectionContent unstyled"> \
 										  </ul> \
 											</section>';
 		}
 		
-		$('#content #feeds').append(sectionHTML);
+		// Cache the new section into a variable since we inserting feeds later
+		// TODO: Test if we can move this to the beginning. Don't think we can do that
+		// 			 right now since we are finding something we just appended
+		var $newSection = $feedsSection.append(sectionHTML).find('.sectionContent');
 		
-		// Add feeds in the section
-		for (var i = 0; i < catFeeds.length; i++) {
+		// Add feeds to the new section
+		for (var i = 0; i < totalFeeds; i++) {
 			var feed = catFeeds[i],
 					html = '<li class="feed"> \
 										<h5> \
@@ -76,7 +89,7 @@ function display_feeds(feeds) {
 											<small class="time">' + facebookTime(feed.date) + '</small> \
 										</h5> \
 								  </li>';
-			$('section:last .sectionContent').append(html);
+			$newSection.append(html);
 		}
 	}
 }
@@ -84,8 +97,8 @@ function display_feeds(feeds) {
 function createSectionUtils() {
 	var html = '<span class="sectionUtils"> \
 								<span class="feedControls"> \
-									<image class="removeFeed" src="../images/minus_sign.png"/> \
-									<image class="addFeed" src="../images/plus_sign.png"/> \
+									<img class="removeFeed" src="../images/minus_sign.png"/> \
+									<img class="addFeed" src="../images/plus_sign.png"/> \
 								</span> \
 							</span>';
 	return html;

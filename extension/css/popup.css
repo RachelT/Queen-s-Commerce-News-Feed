@@ -289,10 +289,15 @@ section ul.sectionContent li.feed:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
-section ul.sectionContent li.feed.read {
+section ul.sectionContent li.feed.read h5 {
+  font-weight: normal;
+}
+section ul.sectionContent li.feed.unread h5 {
   font-weight: bold;
 }
-section ul.sectionContent li.feed h4 {
-  width: 380px;
-  display: block;
+section ul.sectionContent li.feed h5 {
+  width: 95%;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: normal;
 }

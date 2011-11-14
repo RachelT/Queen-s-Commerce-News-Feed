@@ -17,7 +17,9 @@
   <div id="content">
     <div id="feeds">
       <div id="options">
-        <button class="btn small">sort</button>
+        <button class="collapse btn small">collapse</button>
+        <button class="sortFeeds btn small">sort</button>
+        <button class="feedbacks btn small">feedbacks</button>
       </div>
     </div>
     <div id="feedContent">
@@ -26,10 +28,16 @@
   </div>
   <script src="/javascript/jquery-1.6.1.min.js"></script>
   <script src="/javascript/jquery-ui-1.8.16.custom.min.js"></script>
+  <script src="/javascript/bootstrap-twipsy.js"></script>
   <script src="/javascript/feeds.js"></script>
   <script>
     $(document).ready(function() {
       fetch_feed();
+      
+      // Twipsy! Some tooltip for our controls
+      $('.feedControls img').twipsy({
+        fallback: 'Increase feeds'
+      })
       
       // Disable header selection
       $('.sectionHeader h4').disableSelection();
