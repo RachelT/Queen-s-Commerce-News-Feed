@@ -17,17 +17,18 @@
   <div id="content">
     <div id="feeds">
       <div id="options">
-        <a class="feedbacks button noSelect">Feedback</a>
-        <a class="collapse button noSelect">Collapse</a>
-        <a class="sortFeeds button noSelect">Sort</a>
+        <a id="feedbacks" class="button noSelect">Feedback</a>
+        <a id="collapse" class="button noSelect">Collapse</a>
+        <a id="sortFeeds" class="button noSelect">Sort</a>
         
         <!-- Some social buttons -->
         
       </div>
     </div>
+    <!--
     <div id="feedContent">
-      
     </div>
+    -->
   </div>
   <script src="/javascript/jquery-1.6.1.min.js"></script>
   <script src="/javascript/jquery-ui-1.8.16.custom.min.js"></script>
@@ -58,16 +59,22 @@
   			
       // Toggle in and out sections
       $('.sectionHeader h4').live('click', function() {
-        $(this).parents('section').find('.sectionContent').toggle();
+        var $targetContent = $(this).parents('section').find('.sectionContent');
+        $targetContent.toggle();
+        window.feedsManager.updateSectionState($targetContent.attr('data-sectionKey'), $targetContent.is(':visible'));
       });
       
       // Show feed description upon click
-      $(".feed a").live('click', function() {
+      $('.feed a').live('click', function() {
         // Grab and update the feed content
       });
       
       // Handle category max configuration
       
+      // Handle collapse command
+      $('#collapse').click(function(){
+        window.feedsManager.collapseAllFeeds();
+      });
       
     });
   </script>

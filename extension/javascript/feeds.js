@@ -70,7 +70,8 @@ function display_feeds(feeds) {
 		// Only add our feed content section if we have content
 		// This is to avoid the empty space between empty sections
 		if (totalFeeds > 0) {
-			sectionHTML += '<ul class="sectionContent unstyled"> \
+			var newKey = oneKey.replace(/\s/g, '');
+			sectionHTML += '<ul class="sectionContent unstyled" data-sectionKey='+ newKey +'> \
 										  </ul> \
 											</section>';
 		}
@@ -96,7 +97,7 @@ function display_feeds(feeds) {
 
 	// Since we have our feeds, lets initialize it
 	window.feedsManager.initialize();
-	window.feedsManager.collapseAllFeeds();
+	window.feedsManager.restoreSectionState();
 }
 
 function createSectionUtils() {
@@ -147,13 +148,41 @@ function getDateDifference(newDate, oldDate) {
 }
 
 window.feedsManager = {
-	
 	initialize: function() {
 		this.$feedsSelection = $('#feeds section');
 		this.$feedsContent = this.$feedsSelection.find('.sectionContent');
 	},
 	
+	restoreSectionState: function() {
+		var that = this;
+		this.$feedsContent.each(function(index) {
+			var sectionKey = $(this).attr('data-sectionKey'),
+					isOpen = that.getSectionState(sectionKey);
+			if (isOpen) {
+				$(this).show();
+			}else {
+				$(this).hide();
+			}
+		});
+	},
 	collapseAllFeeds: function() {
-		this.$feedsContent.hide();
+		var that = this;
+		
+		// Loop through all sections and hide them. Also update localStorage
+		// Note: Each is a slower when elements are large. However, since we dont have
+		// 		   much sections, it is okay!
+		this.$feedsContent.each(function(index) {
+			var $targetFeed = $(this);
+			$targetFeed.hide();
+			that.updateSectionState($targetFeed.attr('data-sectionKey'));
+		});
+	},
+	updateSectionState: function(theKey, status) {
+		var newKey = theKey + '-status';
+		console.log('new status = ' + status);
+		window.localStorage.setItem(theKey, status);
+	},
+	getSectionState: function(theKey) {
+		return window.localStorage.getItem(theKey) == 'true';
 	}
 }
