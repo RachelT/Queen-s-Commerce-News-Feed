@@ -93,6 +93,10 @@ function display_feeds(feeds) {
 			$newSection.append(html);
 		}
 	}
+
+	// Since we have our feeds, lets initialize it
+	window.feedsManager.initialize();
+	window.feedsManager.collapseAllFeeds();
 }
 
 function createSectionUtils() {
@@ -140,4 +144,16 @@ function getDateDifference(newDate, oldDate) {
 			daysDiff = diff / 1000 / 60 / 60 / 24;
 	
 	return parseInt(daysDiff); // Round down
+}
+
+window.feedsManager = {
+	
+	initialize: function() {
+		this.$feedsSelection = $('#feeds section');
+		this.$feedsContent = this.$feedsSelection.find('.sectionContent');
+	},
+	
+	collapseAllFeeds: function() {
+		this.$feedsContent.hide();
+	}
 }

@@ -58,7 +58,7 @@
   			
       // Toggle in and out sections
       $('.sectionHeader h4').live('click', function() {
-        $(this).parent('.sectionHeader').next().toggle();
+        $(this).parents('section').find('.sectionContent').toggle();
       });
       
       // Show feed description upon click
