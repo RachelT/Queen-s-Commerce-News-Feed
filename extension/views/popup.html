@@ -41,12 +41,12 @@
       fetch_feed();
       
       // Twipsy! Some tooltips for our controls
-      $('.feedControls img.removeFeed').twipsy({
+      $('.feedControls img.removeFeed:not(.disabled)').twipsy({
         live: true,
         placement: 'left',
         fallback: '-1 max feed'
       });
-      $('.feedControls img.addFeed').twipsy({
+      $('.feedControls img.addFeed:not(.disabled)').twipsy({
         live: true,
         placement: 'left',
         fallback: '+1 max feed'
@@ -59,9 +59,11 @@
   			
       // Toggle in and out sections
       $('.sectionHeader h4').live('click', function() {
-        var $targetContent = $(this).parents('section').find('.sectionContent');
+        var $section = $(this).parents('section'),
+            targetKey = $section.attr('data-sectionKey'),
+            $targetContent = $section.find('.sectionContent');
         $targetContent.toggle();
-        window.feedsManager.updateSectionState($targetContent.attr('data-sectionKey'), $targetContent.is(':visible'));
+        window.feedsManager.updateSectionState(targetKey, $targetContent.is(':visible'));
       });
       
       // Show feed description upon click
@@ -70,7 +72,33 @@
       });
       
       // Handle category max configuration
-      
+      $('.feedControls img').live('click', function () {
+        if ($(this).hasClass('disabled')) return;
+        
+        var $sectionElement = $(this).parents('section'),
+            sectionKey = $sectionElement.attr('data-sectionKey'),
+            currentMax = window.feedsManager.getSectionMax(sectionKey),
+            increase = $(this).hasClass('addFeed') ? 1 : -1,
+            newMax = currentMax + increase;
+        console.log(currentMax + " + " + increase + "= " + (currentMax + increase));
+        window.feedsManager.updateSectionMax(sectionKey, newMax);
+        if (increase < 0 && newMax == 0) {
+          $(this).addClass('disabled');
+        }else if (increase > 0 && newMax == 1) {
+          $(this).removeClass('disabled');
+        }
+        
+        // Update feed display
+        $sectionElement.find('.sectionHeader h4 .maxFeeds').html(newMax);
+        
+        // Remove last feed
+        if (increase > 0) {
+          window.feedsManager.appendOneFeed($sectionElement);
+        }else if (increase < 0) {
+          window.feedsManager.removeLastFeed($sectionElement);
+        }        
+      });
+
       // Handle collapse command
       $('#collapse').click(function(){
         window.feedsManager.collapseAllFeeds();

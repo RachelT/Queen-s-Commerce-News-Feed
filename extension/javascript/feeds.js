@@ -59,7 +59,8 @@ function display_feeds(feeds) {
 		var catFeeds = feeds[oneKey],
 				maxFeeds = 10, //parseInt(window.localStorage.getItem(oneKey.replace(/\s/g, '').capitalize())),
 				totalFeeds = catFeeds.length,
-				sectionHTML = '<section>\
+				newKey = oneKey.replace(/\s/g, ''),
+				sectionHTML = '<section data-sectionKey='+ newKey +'>\
 												<div class="sectionHeader noSelect"> \
 													<h4>' + oneKey + '<small> \
 													<span class="totalFeeds">' + totalFeeds + '</span> Feeds (max \
@@ -70,8 +71,7 @@ function display_feeds(feeds) {
 		// Only add our feed content section if we have content
 		// This is to avoid the empty space between empty sections
 		if (totalFeeds > 0) {
-			var newKey = oneKey.replace(/\s/g, '');
-			sectionHTML += '<ul class="sectionContent unstyled" data-sectionKey='+ newKey +'> \
+			sectionHTML += '<ul class="sectionContent unstyled"> \
 										  </ul> \
 											</section>';
 		}
@@ -148,6 +148,9 @@ function getDateDifference(newDate, oldDate) {
 }
 
 window.feedsManager = {
+	sectionStatusIdentifier: '-status',
+	sectionMaxIdentifier: '-max',
+	
 	initialize: function() {
 		this.$feedsSelection = $('#feeds section');
 		this.$feedsContent = this.$feedsSelection.find('.sectionContent');
@@ -156,7 +159,7 @@ window.feedsManager = {
 	restoreSectionState: function() {
 		var that = this;
 		this.$feedsContent.each(function(index) {
-			var sectionKey = $(this).attr('data-sectionKey'),
+			var sectionKey = $(this).parents('section').attr('data-sectionKey'),
 					isOpen = that.getSectionState(sectionKey);
 			if (isOpen) {
 				$(this).show();
@@ -174,15 +177,39 @@ window.feedsManager = {
 		this.$feedsContent.each(function(index) {
 			var $targetFeed = $(this);
 			$targetFeed.hide();
-			that.updateSectionState($targetFeed.attr('data-sectionKey'));
+			that.updateSectionState($targetFeed.parents('section').attr('data-sectionKey'));
 		});
 	},
 	updateSectionState: function(theKey, status) {
-		var newKey = theKey + '-status';
-		console.log('new status = ' + status);
-		window.localStorage.setItem(theKey, status);
+		console.log(this.sectionStatusIdentifier);
+		var newKey = theKey + this.sectionStatusIdentifier;
+		window.localStorage.setItem(newKey, status);
 	},
 	getSectionState: function(theKey) {
-		return window.localStorage.getItem(theKey) == 'true';
+		var newKey = theKey + this.sectionStatusIdentifier;
+		return window.localStorage.getItem(newKey) == 'true';
+	},
+	updateSectionMax: function(theKey, newValue) {
+		var newKey = theKey + this.sectionMaxIdentifier;
+		window.localStorage.setItem(newKey, parseInt(newValue));
+	},
+	getSectionMax: function(theKey) {
+		var newKey = theKey + this.sectionMaxIdentifier;
+		return parseInt(window.localStorage.getItem(newKey));
+	},
+	removeLastFeed: function($sectionElement) {
+		$sectionElement.find('.feed:last').remove();
+	},
+	appendOneFeed: function($sectionElement) {
+		
+		// TODO: Get one more feed either from cache or from server
+		
+		// Testing
+		var $newFeed = $sectionElement.find('.feed:last').clone();
+		console.log($newFeed);
+		$sectionElement.find('.sectionContent').append($newFeed);
+	},
+	update: function() {
+		this.initialize();
 	}
 }

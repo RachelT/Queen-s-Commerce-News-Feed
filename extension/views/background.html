@@ -17,6 +17,14 @@
         var optionsPageURL = chrome.extension.getURL('/views/options.html');
         chrome.tabs.create({url: optionsPageURL});
         window.localStorage.setItem('isInstalled', '1');
+        
+        window.localStorage.setItem('Administrative-max', 10);
+        window.localStorage.setItem('Career-max', 10);
+        window.localStorage.setItem('ResearchPool-max', 10);
+        window.localStorage.setItem('Comsoc-max', 10);
+        window.localStorage.setItem('DayOnBay-max', 10);
+        window.localStorage.setItem('AMS-max', 10);
+        window.localStorage.setItem('General-max', 10);
       }
       
       function fetch_feed(url, callback) {
