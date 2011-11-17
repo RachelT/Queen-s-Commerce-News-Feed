@@ -229,14 +229,16 @@ body {
 body #content {
   width: 490px;
   padding: 5px 0px 0px 0px;
+  overflow-y: scroll;
+}
+body #content #options {
+  margin-bottom: 3px;
+  height: 30px;
+  width: 100%;
 }
 body #content #feeds {
-  overflow-y: scroll;
   width: 100%;
   max-height: 300px;
-}
-body #content #feeds #options {
-  margin-bottom: 3px;
 }
 body #content #feedContent {
   overflow-y: scroll;
@@ -249,7 +251,12 @@ body #content #feedContent {
 section .sectionHeader {
   background-color: #EEE;
   padding-left: 10px;
+  border: solid 1px #EEE;
+  cursor: default;
   zoom: 1;
+  -webkit-transition: all 0.318s;
+  -moz-transition: all 0.318s;
+  transition: all 0.318s;
 }
 section .sectionHeader:after {
   display: block;
@@ -258,25 +265,58 @@ section .sectionHeader:after {
   clear: both;
   content: ".";
 }
+section .sectionHeader.sorting {
+  background-color: #E2E2E2;
+}
+section .sectionHeader.sorting:hover {
+  border-color: #888;
+}
 section .sectionHeader h4 {
   float: left;
   cursor: pointer;
-  min-width: 220px;
 }
 section .sectionHeader h4 small {
   color: #a6a6a6;
   margin-left: 3px;
 }
+section .sectionHeader.sorting h4 {
+  cursor: default;
+}
 section .sectionHeader .sectionUtils {
   float: right;
   margin-right: 7px;
+  height: 38px;
 }
 section .sectionHeader .sectionUtils .feedControls {
-  display: block;
-  margin-top: 9px;
+  height: 100%;
+  zoom: 1;
 }
-section .sectionHeader .sectionUtils .feedControls img {
+section .sectionHeader .sectionUtils .feedControls:after {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  clear: both;
+  content: ".";
+}
+section .sectionHeader .sectionUtils .feedControls a {
+  width: 22px;
+  height: 22px;
+  margin-top: 9px;
+  display: block;
+  float: left;
   cursor: pointer;
+  -webkit-transition: background 300ms ease-in 200ms;
+  -moz-transition: background 300ms ease-in 200ms;
+  transition: background 300ms ease-in 200ms;
+}
+section .sectionHeader .sectionUtils .feedControls a.addFeed {
+  background: url(../images/plus_sign.png) no-repeat 0 0;
+}
+section .sectionHeader .sectionUtils .feedControls a.removeFeed {
+  background: url(../images/minus_sign.png) no-repeat 0 0;
+}
+section .sectionHeader.sorting .sectionUtils .feedControls a.addFeed, section .sectionHeader.sorting .sectionUtils .feedControls a.removeFeed {
+  background: rgba(255, 255, 255, 0);
 }
 section ul.sectionContent {
   padding-left: 10px;

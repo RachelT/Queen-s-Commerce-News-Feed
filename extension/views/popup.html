@@ -15,22 +15,25 @@
 </head>
 <body>
   <div id="content">
+    <div id="options">
+      <!-- Sorting buttons -->
+      <a id="sort-cancel" class="button noSelect" style="display:none;">Cancel</a>
+      <a id="sort-done" class="button noSelect" style="display:none;">Done</a>
+      
+      <a id="feedbacks" class="button noSelect">Feedback</a>
+      <a id="collapse" class="button noSelect">Collapse</a>
+      <a id="sortFeeds" class="button noSelect">Sort</a>
+      <!-- Some social buttons -->
+    </div>
     <div id="feeds">
-      <div id="options">
-        <a id="feedbacks" class="button noSelect">Feedback</a>
-        <a id="collapse" class="button noSelect">Collapse</a>
-        <a id="sortFeeds" class="button noSelect">Sort</a>
-        
-        <!-- Some social buttons -->
-        
-      </div>
+      
     </div>
     <!--
     <div id="feedContent">
     </div>
     -->
   </div>
-  <script src="/javascript/jquery-1.6.1.min.js"></script>
+  <script src="/javascript/jquery-1.7.js"></script>
   <script src="/javascript/jquery-ui-1.8.16.custom.min.js"></script>
   <script src="/javascript/bootstrap-twipsy.js"></script>
   <script src="/javascript/feeds.js"></script>
@@ -41,15 +44,15 @@
       fetch_feed();
       
       // Twipsy! Some tooltips for our controls
-      $('.feedControls img.removeFeed:not(.disabled)').twipsy({
+      $('.sectionHeader .removeFeed:not(.disabled)').twipsy({
         live: true,
         placement: 'left',
-        fallback: '-1 max feed'
+        fallback: 'Increase Max'
       });
-      $('.feedControls img.addFeed:not(.disabled)').twipsy({
+      $('.sectionHeader .addFeed:not(.disabled)').twipsy({
         live: true,
         placement: 'left',
-        fallback: '+1 max feed'
+        fallback: 'Decrease Max'
       });
       
       // Disable header selection
@@ -59,6 +62,10 @@
   			
       // Toggle in and out sections
       $('.sectionHeader h4').live('click', function() {
+        
+        // If we are sorting, we cannot toggle
+        if ($(this).parents('.sectionHeader').hasClass('sorting')) return;
+              
         var $section = $(this).parents('section'),
             targetKey = $section.attr('data-sectionKey'),
             $targetContent = $section.find('.sectionContent');
@@ -72,8 +79,9 @@
       });
       
       // Handle category max configuration
-      $('.feedControls img').live('click', function () {
-        if ($(this).hasClass('disabled')) return;
+      $('#feeds').on('click', '.feedControls a', function () {
+        console.log('poop!');
+        if ($(this).hasClass('disabled') || $(this).parents('.sectionHeader').hasClass('sorting')) return;
         
         var $sectionElement = $(this).parents('section'),
             sectionKey = $sectionElement.attr('data-sectionKey'),
@@ -102,6 +110,42 @@
       // Handle collapse command
       $('#collapse').click(function(){
         window.feedsManager.collapseAllFeeds();
+      });
+      
+      $('#sortFeeds').click(function() {
+        // Collapse everything
+        window.feedsManager.collapseAllFeeds();
+        
+        // Adjust state of categories - adjust look and diable controls
+        $('#feeds .sectionHeader').addClass('sorting');
+        
+        // Hook it so its movable!
+        $("#feeds").sortable();
+        
+        // Update our options so we have new buttons
+        var $currentOptions = $('#options a:visible');
+        var $sortOptions = $('#options a:hidden');
+        $currentOptions.hide();
+        $sortOptions.show();
+        
+        $('#sort-cancel, #sort-done').one('click', function() {
+          
+          if ( $(this).attr('id') == 'sort-done' ) {
+            
+            // Save current category order
+            $('#feeds section').each(function(index, element) {
+              window.feedsManager.updateSectionIndex($(element).attr('data-sectionKey'), index);
+            });
+            
+          }else {
+            $('#feeds').sortable('cancel');
+          }
+          
+          // Revert back to normal state
+          $('#feeds .sectionHeader').removeClass('sorting');
+          $currentOptions.show();
+          $sortOptions.hide();
+        });
       });
       
     });

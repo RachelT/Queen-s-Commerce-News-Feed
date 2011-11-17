@@ -51,15 +51,27 @@ function fetch_feed() {
 
 function display_feeds(feeds) {
 	var sectionUtilsHTML = createSectionUtils(),
-			$feedsSection = $('#content #feeds');
+			$feedsSection = $('#content #feeds'),
+			newFeeds = new Array();
 	
+	// Get feeds and convert them into real array
 	feeds = $.parseJSON(feeds);
-	for (var oneKey in feeds) {
+	for (var key in feeds) { newFeeds.push([key, feeds[key]]); }
+	
+	newFeeds.sort(function (a, b) {
+		var keyA = a[0].replace(/\s/g, '') + '-index',
+				keyB = b[0].replace(/\s/g, '') + '-index',
+				valueA = parseInt(window.localStorage.getItem(keyA)),
+				valueB = parseInt(window.localStorage.getItem(keyB));
+		return valueA - valueB;
+	});
+	for (var i = 0; i < newFeeds.length; i++) {
 		// Get our variables for this category
-		var catFeeds = feeds[oneKey],
-				maxFeeds = 10, //parseInt(window.localStorage.getItem(oneKey.replace(/\s/g, '').capitalize())),
+		var oneKey = newFeeds[i][0],
+				catFeeds = newFeeds[i][1],
 				totalFeeds = catFeeds.length,
 				newKey = oneKey.replace(/\s/g, ''),
+				maxFeeds = parseInt(window.localStorage.getItem(newKey + '-max')),
 				sectionHTML = '<section data-sectionKey='+ newKey +'>\
 												<div class="sectionHeader noSelect"> \
 													<h4>' + oneKey + '<small> \
@@ -82,8 +94,8 @@ function display_feeds(feeds) {
 		var $newSection = $feedsSection.append(sectionHTML).find('.sectionContent:last');
 		
 		// Add feeds to the new section
-		for (var i = 0; i < totalFeeds; i++) {
-			var feed = catFeeds[i],
+		for (var j = 0; j < Math.min(maxFeeds, totalFeeds); j++) {
+			var feed = catFeeds[j],
 					html = '<li class="feed"> \
 										<h5> \
 											<a href="' + feed.url + '">' + feed.title + '</a> \
@@ -103,8 +115,8 @@ function display_feeds(feeds) {
 function createSectionUtils() {
 	var html = '<span class="sectionUtils"> \
 								<span class="feedControls"> \
-									<img class="removeFeed" src="../images/minus_sign.png"/> \
-									<img class="addFeed" src="../images/plus_sign.png"/> \
+									<a class="removeFeed"></a> \
+									<a class="addFeed"></a> \
 								</span> \
 							</span>';
 	return html;
@@ -148,8 +160,10 @@ function getDateDifference(newDate, oldDate) {
 }
 
 window.feedsManager = {
+	
 	sectionStatusIdentifier: '-status',
 	sectionMaxIdentifier: '-max',
+	sectionIndexIdentifier: '-index',
 	
 	initialize: function() {
 		this.$feedsSelection = $('#feeds section');
@@ -181,7 +195,6 @@ window.feedsManager = {
 		});
 	},
 	updateSectionState: function(theKey, status) {
-		console.log(this.sectionStatusIdentifier);
 		var newKey = theKey + this.sectionStatusIdentifier;
 		window.localStorage.setItem(newKey, status);
 	},
@@ -206,10 +219,17 @@ window.feedsManager = {
 		
 		// Testing
 		var $newFeed = $sectionElement.find('.feed:last').clone();
-		console.log($newFeed);
 		$sectionElement.find('.sectionContent').append($newFeed);
+	},
+	updateSectionIndex: function(theKey, index) {
+		var newKey = theKey + this.sectionIndexIdentifier;
+		window.localStorage.setItem(newKey, parseInt(index));
+	},
+	getSectionIndex: function(theKey) {
+		var newKey = theKey + this.sectionIndexIdentifier;
+		return parseInt(window.localStorage.getItem(newKey));
 	},
 	update: function() {
 		this.initialize();
-	}
+	},
 }

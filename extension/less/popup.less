@@ -13,15 +13,17 @@ body {
 	#content {
 		width: 490px;
 		padding: 5px 0px 0px 0px;
+		overflow-y: scroll;
+		
+		#options {
+			margin-bottom: 3px;
+			height: 30px;
+			width: 100%
+		}
 		
 		#feeds {
-			overflow-y: scroll;
 			width: 100%;
 			max-height: 300px;
-			
-			#options {
-				margin-bottom: 3px;
-			}
 		}
 		
 		#feedContent {
@@ -39,31 +41,69 @@ section {
 	.sectionHeader {
 		background-color: #EEE;
 		padding-left: @contentLeftPadding;
+		border: solid 1px #EEE;
+		cursor: default;
 		.clearfix;
+		.transition(all .318s);
+		
+		// Header interactions
+		&.sorting {
+			background-color: #E2E2E2;
+			//cursor: pointer;
+		}
+		
+		&.sorting:hover {
+			border-color: #888;
+		}
 		
 		// Category title
 		h4 {
 			float: left;
 			cursor: pointer;
-			min-width: 220px;
 			
 			small {
 				color: darken(@grayLighter, 15%);
 				margin-left: 3px;
 			}
 		}
+		&.sorting h4 {
+			cursor: default;
+		}
 		
 		// Category utils
 		.sectionUtils {
 			float: right;
 			margin-right: 7px;
-
+			height: 38px;
+			
 			.feedControls {
-				display: block;
-				margin-top: 9px;
+				height: 100%;
+				.clearfix;
 				
-				img { cursor: pointer; }
-			}
+				a {
+					width: 22px;
+					height: 22px;
+					margin-top: 9px;
+					display: block;
+					float: left;
+					cursor: pointer;
+					.transition(background 300ms ease-in 200ms);
+					
+					&.addFeed {
+						background: url(../images/plus_sign.png) no-repeat 0 0;
+					}
+
+					&.removeFeed {
+						background: url(../images/minus_sign.png) no-repeat 0 0;
+					}
+				}
+			} // End feedControls
+		} // End sectionUtils
+		
+		// When we are sorting, do not show the buttons
+		&.sorting .sectionUtils .feedControls a.addFeed, 
+		&.sorting .sectionUtils .feedControls a.removeFeed {
+			background: rgba(255,255,255,0);
 		}
 	}
 	
