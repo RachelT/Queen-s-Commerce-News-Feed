@@ -9,6 +9,11 @@ var FB_SHARE_URL = "http://www.facebook.com/sharer.php?u=";
 var TWITTER_SHARE_URL = "http://www.twitter.com/share?&url=";
 
 /**
+ * This specifies when a feed is considered old
+ */
+var daysUntilOld = 8;
+
+/**
  * Utitlity prototype functions
  */
 String.prototype.capitalize = function() {
@@ -96,13 +101,16 @@ function display_feeds(feeds) {
 		// Add feeds to the new section
 		for (var j = 0; j < Math.min(maxFeeds, totalFeeds); j++) {
 			var feed = catFeeds[j],
-					html = '<li class="feed"> \
+					newAndRead = (window.storageManager.getFeedState(feed.identifier) != 'read' && 
+												isNewFeed(feed.date)) ? 'new' : '',
+					html = '<li class="feed ' + newAndRead + '" data-identifier="' + feed.identifier + '"> \
 										<h5> \
 											<a href="' + feed.url + '">' + feed.title + '</a> \
 											<small class="time" data-timestamp="' + feed.date + '"> \
 											' + facebookTime(feed.date) + '</small> \
 										</h5> \
 								  </li>';
+			console.log(feed.identifier + ': ' + newAndRead);
 			$newSection.append(html);
 		}
 	}
@@ -157,6 +165,37 @@ function getDateDifference(newDate, oldDate) {
 			daysDiff = diff / 1000 / 60 / 60 / 24;
 	
 	return parseInt(daysDiff); // Round down
+}
+
+function isNewFeed(timestamp) {
+	// Return this is a new feed if its within 3 days
+	var now = new Date(),
+			feedDate = new Date(timestamp * 1000);
+	if (getDateDifference(now, feedDate) <= daysUntilOld) {
+		return true;
+	}
+	return false;
+}
+
+window.storageManager = {
+	feedStatIdentifier: 'feedStates',
+	
+	setFeedState: function(identifier, state) {
+		if (state != 'read') return;	// Assumes anything not read is unread
+		
+		var feedStats = window.localStorage.getItem(this.feedStatIdentifier);
+		feedStats = feedStats ? JSON.parse(feedStats) : {}
+		feedStats[identifier] = state;
+		window.localStorage.setItem(this.feedStatIdentifier, JSON.stringify(feedStats))
+	},
+	getFeedState: function(identifier) {
+		var feedStats = window.localStorage.getItem(this.feedStatIdentifier);
+		if (feedStats) {
+			feedStats = JSON.parse(feedStats);
+			return feedStats[identifier] || 'unread';
+		}
+		return 'unread';
+	}
 }
 
 window.feedsManager = {
@@ -231,5 +270,5 @@ window.feedsManager = {
 	},
 	update: function() {
 		this.initialize();
-	},
+	}
 }

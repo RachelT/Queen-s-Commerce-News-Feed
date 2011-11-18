@@ -112,6 +112,7 @@
         window.feedsManager.collapseAllFeeds();
       });
       
+      // Handle category sorting command
       $('#sortFeeds').click(function() {
         // Collapse everything
         window.feedsManager.collapseAllFeeds();
@@ -146,6 +147,23 @@
           $currentOptions.show();
           $sortOptions.hide();
         });
+      });
+      
+      // Handle link clicking event
+      $('#feeds').on('click', '.feed a', function(event) {
+        var $that = $(event.target);
+            link = $that.attr('href'),
+            identifier = $that.parents('.feed').attr('data-identifier'),
+            isNew = $that.parents('.feed').hasClass('new');
+        console.log('clicked: ' + isNew);
+        // Open new link
+        chrome.tabs.create({url: link});
+        
+        // Set this link as read if not - in localStorage and in DOM
+        if (isNew) {
+          window.storageManager.setFeedState(identifier, 'read');
+          $that.parents('.feed').removeClass('new');
+        }
       });
       
     });
