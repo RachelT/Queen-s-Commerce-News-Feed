@@ -7,7 +7,7 @@ class URLConnect
     private $url;
 	private $onlyHeader;
 	private $timeout;
-
+	
     public function __construct($url, $timeout = 60, $onlyHeader = FALSE)
     {
         $this->url = $url;

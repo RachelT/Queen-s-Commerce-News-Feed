@@ -9,7 +9,8 @@
   },
   "background_page": "views/background.html",
   "permissions": [
-		"http://www.dracoli.com/commercefeeds/server/cache/feeds.json"
+		"http://www.dracoli.com/commercefeeds/server/cache/feeds.json",
+		"tabs"
 	],
   "browser_action": {
     "default_icon": "images/icon.png",

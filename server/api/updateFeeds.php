@@ -12,7 +12,7 @@ define('ENVIRONMENT', 'DEVELOPMENT');
 $result = array_merge(
 			FeedParser::parsePortalContent(), 
 			FeedParser::parseOtherSites('https://comsoc.queensu.ca/home/index.php?option=com_ninjarsssyndicator&feed_id=1&format=raw', 'Comsoc', ENVIRONMENT), 
-			FeedParser::parseOtherSites('http://dayonbay.ca/index.php/component/option,com_ninjarsssyndicator/feed_id,1/format,raw/', 'DayOnBay', ENVIRONMENT)
+			FeedParser::parseOtherSites('http://dayonbay.ca/index.php/component/option,com_ninjarsssyndicator?feed_id=1&format=raw', 'DayOnBay', ENVIRONMENT)
 		  );
 
 // Save results to file

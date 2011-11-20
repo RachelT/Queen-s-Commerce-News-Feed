@@ -8,10 +8,11 @@ TODOs
 5. <del>Implement just open new tab when link clicked.</del>
 6. <del>Implement read, unread on links using feed identifier</del>
 7. <del>Implement new feed mechanism in extension (not server), EX: date < 12hr is new</del>
-8. Add my social buttons! Link it to my twitter and the project fb page
-9. Caching support - offline viewing
-10. Implement better date retrieval mechanism for server (if hrs and min not provided used retrieved time)
-10. Work on server. Store all feeds in own database, API that gets info from database and convert to json.
-11. JavaScript optimization is defered to the last step since I'm in the progress of going over advanced JavaScript. _(Second milestone)_
-12. Implement unit testing in milestone two.
-13. Use JSON for local storage in milestone two.
+8. <del>Add my social buttons! Link it to my twitter and the project fb page</del>
+9. <del>Implement feedback<del/>
+10. Caching support - offline viewing
+11. Implement better date retrieval mechanism for server (if hrs and min not provided used retrieved time)
+12. Work on server. Store all feeds in own database, API that gets info from database and convert to json.
+13. JavaScript optimization is defered to the last step since I'm in the progress of going over advanced JavaScript. _(Second milestone)_
+14. Implement unit testing in milestone two.
+15. Use JSON for local storage in milestone two.

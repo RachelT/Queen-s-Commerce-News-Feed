@@ -6,17 +6,20 @@ require_once('../helpers/RestUtils.php');
 require_once('../helpers/URLConnect.php');
 
 /**
- * Parses all documents required for this application
+ * Provides functions to parse feeds from Commerce portal, ComSoc, and DayOnBay
+ * This script uses html sniffing for parsing Commerce portal content.
+ * Comsoc and DayOnBay feed is parsed using the rss feed constructed with its Joomla extension
  *
  * @author Draco Li
- * @version 1.0
+ * @version 1.1
  */
 class FeedParser {
 	
 	/**
 	 * Parses the feeds on the commerce portal
+	 * @param $returnType How the user wanted the result. Can be array, object, or json
 	 */
-	public static function parsePortalContent()
+	public static function parsePortalContent($returnType = 'json')
 	{	
 		// Prepare the content
 		$url = 'https://commerce.queensu.ca/commerce/2006/commerce.nsf/homepage';
@@ -126,12 +129,7 @@ class FeedParser {
 	
 	private static function getContentFromUrl($url)
 	{
-		$urlconnect = new URLConnect($url, 200, FALSE);
-		if ( $urlconnect->getHTTPCode() != 200 ) {
-			RestUtils::sendResponse($urlconnect->getHTTPCode());
-			exit;
-		}
-		return $urlconnect->getContent();	
+		
 	}
 
 	private static function cleanUpDescription($description)
@@ -150,6 +148,21 @@ class FeedParser {
 		$description = preg_replace('/\<p\>\s*\<a[^(\\\>)]*\>Read more(.)*\<\/a\>\s*\<\/p\>/', '', $description);	
 		
 		return $description;
+	}
+	
+	/**
+	 * Get html content from a url. Timeout in 1min.
+	 * If unsucessful, print out a error page.
+	 */
+	private static function getContentFromUrl($url) {
+		if ($url == NULL || strlen($url)) return NULL;
+		
+		$urlconnect = new URLConnect($url, 60, FALSE);
+		if ( $urlconnect->getHTTPCode() != 200 ) {
+			RestUtils::sendResponse($urlconnect->getHTTPCode());
+			exit;
+		}
+		return $urlconnect->getContent();
 	}
 }
 

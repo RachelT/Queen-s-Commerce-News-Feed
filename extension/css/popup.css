@@ -231,10 +231,52 @@ body #content {
   padding: 5px 0px 0px 0px;
   overflow-y: scroll;
 }
-body #content #options {
+body #content #header {
   margin-bottom: 3px;
   height: 30px;
   width: 100%;
+  zoom: 1;
+}
+body #content #header:after {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  clear: both;
+  content: ".";
+}
+body #content #header #sortingOptions {
+  float: left;
+  height: 100%;
+}
+body #content #header #socialButtons {
+  float: right;
+  height: 100%;
+  zoom: 1;
+}
+body #content #header #socialButtons:after {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  clear: both;
+  content: ".";
+}
+body #content #header #socialButtons a {
+  width: 30px;
+  float: left;
+  padding: 0 3px 0 3px;
+  margin-right: 8px;
+  text-indent: -9999px;
+}
+body #content #header #socialButtons a span {
+  height: 28px;
+  width: 28px;
+  display: block;
+}
+body #content #header #socialButtons #twitter {
+  background: url(../images/twitter_icon.png) no-repeat 0 -1px;
+}
+body #content #header #socialButtons #fb {
+  background: url(../images/facebook_icon.png) no-repeat 0 -1px;
 }
 body #content #feeds {
   width: 100%;

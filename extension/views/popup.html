@@ -15,14 +15,21 @@
 </head>
 <body>
   <div id="content">
-    <div id="options">
+    <div id="header">
       <!-- Sorting buttons -->
-      <a id="sort-cancel" class="button noSelect" style="display:none;">Cancel</a>
-      <a id="sort-done" class="button noSelect" style="display:none;">Done</a>
+      <div id="sortingOptions">
+        <a id="sort-cancel" class="button noSelect" style="display:none;">Cancel</a>
+        <a id="sort-done" class="button noSelect" style="display:none;">Done</a>
       
-      <a id="feedbacks" class="button noSelect">Feedback</a>
-      <a id="collapse" class="button noSelect">Collapse</a>
-      <a id="sortFeeds" class="button noSelect">Sort</a>
+        <a id="feedbacks" class="button noSelect">Feedback</a>
+        <a id="collapse" class="button noSelect">Collapse</a>
+        <a id="sortFeeds" class="button noSelect">Sort</a>
+      </div>
+      
+      <div id="socialButtons">
+        <a class="button twipsy" title="Facebook"><span id="fb">Facebook</span></a>
+        <a class="button twipsy" title="Twitter"><span id="twitter">Twitter</span></a>
+      </div>
       <!-- Some social buttons -->
     </div>
     <div id="feeds">
@@ -40,6 +47,19 @@
   <script>
     $(document).ready(function() {
       
+      // Social links
+      $('#socialButtons a').click(function() {
+        var type = $(this).find('span').attr('id'),
+            link = (type == 'fb') ? 'http://www.facebook.com/pages/Commerce-Feeds/176122302480154' 
+                                        : 'http://twitter.com/#!/DracoLi1';
+        chrome.tabs.create({url: link});
+      });
+      
+      // Suggestion box
+      $('#feedbacks').click(function() {
+        executeMailto('draco@dracoli.com', 'Commerce Feeds Feedback', "Howdy Draco! \n");
+      });
+      
       // Fill in our content
       fetch_feed();
       
@@ -54,6 +74,7 @@
         placement: 'left',
         fallback: 'Decrease Max'
       });
+      $('.twipsy:not(.disabled)').twipsy({placement:'below'});
       
       // Disable header selection
       $('.noSelect').live($.support.selectstart ? "selectstart" : "mousedown", function( event ) {
@@ -80,7 +101,6 @@
       
       // Handle category max configuration
       $('#feeds').on('click', '.feedControls a', function () {
-        console.log('poop!');
         if ($(this).hasClass('disabled') || $(this).parents('.sectionHeader').hasClass('sorting')) return;
         
         var $sectionElement = $(this).parents('section'),
@@ -88,7 +108,6 @@
             currentMax = window.feedsManager.getSectionMax(sectionKey),
             increase = $(this).hasClass('addFeed') ? 1 : -1,
             newMax = currentMax + increase;
-        console.log(currentMax + " + " + increase + "= " + (currentMax + increase));
         window.feedsManager.updateSectionMax(sectionKey, newMax);
         if (increase < 0 && newMax == 0) {
           $(this).addClass('disabled');
@@ -97,7 +116,9 @@
         }
         
         // Update feed display
-        $sectionElement.find('.sectionHeader h4 .maxFeeds').html(newMax);
+        $sectionElement.find('.sectionHeader .maxFeeds').html(newMax);
+        var $totalFeeds = $sectionElement.find('.sectionHeader .totalFeeds');
+        $totalFeeds.html(parseInt(totalFeeds.html() + increase));
         
         // Remove last feed
         if (increase > 0) {
@@ -124,8 +145,8 @@
         $("#feeds").sortable();
         
         // Update our options so we have new buttons
-        var $currentOptions = $('#options a:visible');
-        var $sortOptions = $('#options a:hidden');
+        var $currentOptions = $('#sortingOptions a:visible');
+        var $sortOptions = $('#sortingOptions a:hidden');
         $currentOptions.hide();
         $sortOptions.show();
         
@@ -155,7 +176,7 @@
             link = $that.attr('href'),
             identifier = $that.parents('.feed').attr('data-identifier'),
             isNew = $that.parents('.feed').hasClass('new');
-        console.log('clicked: ' + isNew);
+            
         // Open new link
         chrome.tabs.create({url: link});
         

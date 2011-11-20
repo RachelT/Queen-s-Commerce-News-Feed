@@ -39,8 +39,17 @@ function openNewShareWindow(id, url) {
   window.open(openUrl + newsUrl, '_blank', 'resizable=0, scrollbars=0, width=690, height=415');
 }
 
-function openNewContentWindowWithContent(content) {
-	window.open('<div><h2>I love cheese</h2></div>', '', 'toolbar=no, width=300, height=400');
+function executeMailto(email, subject, body) {
+  var action_url = "mailto:" + email + "?";
+  if (subject.length > 0)
+    action_url += "subject=" + encodeURIComponent(subject) + "&";
+
+  if (body.length > 0) {
+    action_url += "body=" + encodeURIComponent(body);
+  }
+	chrome.tabs.getSelected(null, function(tab) {
+		chrome.tabs.update(tab.id, { url: action_url });
+	});
 }
 
 /**
@@ -49,7 +58,20 @@ function openNewContentWindowWithContent(content) {
 function fetch_feed() {
   chrome.extension.sendRequest({'action': 'fetch_feed', 'url': 'http://www.dracoli.com/commercefeeds/server/cache/feeds.json'},
     function(response) {
-      display_feeds(response);
+			var feeds = {};
+			
+			if (response && response.length > 0) {
+				// Cache new JSON response
+				window.storageManager.setCachedFeeds(response);
+				feeds = $.parseJSON(response);
+			}else {
+				feeds = window.storageManager.getCachedFeeds();
+			}
+			
+			if (feeds) {
+				// Display feeds
+	      display_feeds(feeds);
+			}
     }
   );
 }
@@ -59,8 +81,7 @@ function display_feeds(feeds) {
 			$feedsSection = $('#content #feeds'),
 			newFeeds = new Array();
 	
-	// Get feeds and convert them into real array
-	feeds = $.parseJSON(feeds);
+	// Convert feeds into real array
 	for (var key in feeds) { newFeeds.push([key, feeds[key]]); }
 	
 	newFeeds.sort(function (a, b) {
@@ -110,7 +131,6 @@ function display_feeds(feeds) {
 											' + facebookTime(feed.date) + '</small> \
 										</h5> \
 								  </li>';
-			console.log(feed.identifier + ': ' + newAndRead);
 			$newSection.append(html);
 		}
 	}
@@ -179,6 +199,7 @@ function isNewFeed(timestamp) {
 
 window.storageManager = {
 	feedStatIdentifier: 'feedStates',
+	cachedFeedsIdentifier: 'cachedFeeds',
 	
 	setFeedState: function(identifier, state) {
 		if (state != 'read') return;	// Assumes anything not read is unread
@@ -195,6 +216,13 @@ window.storageManager = {
 			return feedStats[identifier] || 'unread';
 		}
 		return 'unread';
+	},
+	setCachedFeeds: function(feeds) {
+		window.localStorage.setItem(this.cachedFeedsIdentifier, feeds);
+	},
+	getCachedFeeds: function() {
+		var feeds = window.localStorage.getItem(this.cachedFeedsIdentifier);
+		return $.parseJSON(feeds);
 	}
 }
 
@@ -208,7 +236,6 @@ window.feedsManager = {
 		this.$feedsSelection = $('#feeds section');
 		this.$feedsContent = this.$feedsSelection.find('.sectionContent');
 	},
-	
 	restoreSectionState: function() {
 		var that = this;
 		this.$feedsContent.each(function(index) {
