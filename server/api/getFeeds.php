@@ -6,8 +6,8 @@
  * In order to get feeds pass action=getFeeds then optionally supply count for each category
  * In order to get description for feed, pass action=getDescription. Optionally supply the category of the feed for faster retrieval
  */
-require('../helpers/GeneralUtils.php');
-require('../helpers/RestUtils.php');
+require('../classes/helpers/GeneralUtils.php');
+require('../classes/helpers/RestUtils.php');
  
 define('ENVIRONMENT', 'DEVELOPMENT');
  
