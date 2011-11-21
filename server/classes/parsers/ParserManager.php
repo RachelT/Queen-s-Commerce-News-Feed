@@ -1,11 +1,12 @@
 <?php
 
-require_once('../helpers/DatabaseManager.php');
+require_once(dirname(__FILE__) . '/../helpers/DatabaseManager.php');
+require_once(dirname(__FILE__) . '/rssparser.class.php');
+require_once(dirname(__FILE__) . '/commerceparser.class.php');
 
 /**
  * The ParserManager is act as an interface to the other parsers.
- * This class will parse any kind of data source from the user by using the other parsing classes
- * ParserManager also handles interacting with the server to retreive parsing information
+ * This class has two main functions. Get feeds and update feeds
  *
  * @author Draco Li
  * @version 1.0
@@ -16,26 +17,55 @@ class ParserManager {
 	// If user needed more, we have to do a query!
 	private static $MaxCachedFeeds = 30;
 	
-	private static $CacheFolder = '/cache/';
-	
 	/**
 	 * A simple method to get cached feeds from targeted sources
-	 * User can optionally set how many feeds to get per source
+	 * User can demand feeds from sources with a specified amount.
 	 * If the user requires more than our cached amount, we do a query!
 	 *
-	 * @param $title The title of the feed source
-	 * @param $type The type of response we want. ex: 'json', 'array', 'object'
-	 * @return The specified result
+	 * @param $sources Something like ['DayOnbay' => 10, 'Commerce Portal' => 20]
+	 * @param $options Includes the type of response we want. ex: 'json', 'array', 'object'
+	 * @returns The specified result
 	 */
 	public static function getFeedsFromSources($sources, $options) {
 			
+			// Set some defaults
+			$options['type'] = $options['type'] ? $options['type'] : 'json';
+			
+			// Results key is the source user specified (source title). The value is a feeds array
+			$results = array();
+			foreach ( $sources as $title=>$amount ) {
+				$result = ParserManager::getCacheForSource($tile);
+				
+				// Check if user asked for more than we can afford
+				if ( count($result) < $amount) {
+					// If asked for more, we update cache with user's amount. Then we retreive cache again!
+					if ( ParserManager::updateCacheForSource($title, $amount) ) {
+						$result = ParserManager::getCacheForSource($tile);
+					}
+				}
+				
+				$result = array_slice($result, 0, $amount);
+				$results[$title] = $result;
+			}
+			
+			// Change result to formate specified by user
+			switch ($options['type']) {
+				case 'json':
+					$results = json_encode($results);
+					break;
+				case 'array':
+					// Results is already in array (assoc)
+					break;
+				case 'object':
+					$results = json_decode(json_encode($results));
+					break;
+			}
+			
+			return $results;
 	}
 	
 	/**
-	 * This methods update all feeds from our sources in the database
-	 * Combining feeds is handled by this method as well to make sure we always have most updated
-	 * feeds in our database.
-	 * Caching is also handled by this class. Each feed source is cached into a indidivual JSON file.
+	 * This methods update feeds from all of our sources in the database and caches results
 	 *
 	 * @return Boolean True if everything is updated. False if something went wrong!
 	 */
@@ -44,42 +74,61 @@ class ParserManager {
 		// Get all our sources from database
 		$dbm = new DatabaseManager();
 		$dbm->executeQuery("SELECT * FROM sources");
-		$results = $dbm->getAllRows();
+		$sourcesInfo = $dbm->getAllRows();
+
+		// Check if results are returned
+		if ( $sourcesInfo == NULL || count($sourcesInfo) == 0 ) { $dbm->closeConnection(); return false; }
 		
-		for ( $i = 0; $i < count($results); $i++ ) {
+		// Update every source
+		for ( $i = 0; $i < count($sourcesInfo); $i++ ) {
 			
-			
-			// Saved parsed feeds to database
-			for ( $j = 0; $j < count($parsedFeeds); $j++ ) {
-				
+			// Parser source and save to database 
+			$parsedFeeds = ParserManager::parseFeedsAndSaveToDatabase($sourcesInfo[$i], $dbm);
+
+			if ( $parsedFeeds && count($parsedFeeds) > 0 ) {
+					// Update our source cache with recent feeds from database
+					ParserManager::updateCacheForSource($sourceInfo, $dbm);
 			}
-			
-			// Cache parsed feeds
 		}
+		
+		$dbm->closeConnection();
+		
+		return true;
 	}
 	
 	/**
+	 * Update feeds from a single source. The source is specified by title.
+	 * The feeds are also stored to a JSON file
+	 *
 	 * @param $feedSource The name of the feed source
-	 * @returns True if successful
+	 * @returns Boolean/Array Returns false if update failed. Returns cached feeds if sucessful.
 	 */
 	public static function updateFeedsFromSource($sourceName) {
 		
 		// Query database for feedSource
 		$dbm = new DatabaseManager();
-		$dbm->executeQuery("SELECT * FROM sources WHERE title='" + $sourceName + "'");
+		$dbm->executeQuery("SELECT * FROM sources WHERE title='" . $sourceName . "'");
 		$sourceInfo = $dbm->getRow();
 		
-		if ( $sourceInfo == NULL ) return false;
+		if ( $sourceInfo == NULL ) { $dbm->closeConnection(); return false; }
 		
-		// Parser and save
-		$parsedFeeds = ParserManager::parseFeedsAndSaveToDatabase($sourceInfo);
+		// Parser source and save to database 
+		$parsedFeeds = ParserManager::parseFeedsAndSaveToDatabase($sourceInfo, $dbm);
+		print_r($parsedFeeds);
 		
-		// Cache updated feeds
-		$cachePath = ParserManager::getCachePathForSource($sourceInfo['title']);
-		$result = file_put_contents(json_encode($parsedFeeds));
-		if ( !$result ) return false;
+		// If nothing is parsed due to some reason, we return immediately
+		if ( $parsedFeeds && count($parsedFeeds) > 0 ) {
+			$dbm->closeConnection();
+			return NULL;
+		}
 		
-		return true;
+		// Update our source cache with recent feeds from database
+		$result = ParserManager::updateCacheForSource($sourceInfo, $dbm);
+		
+		$dbm->closeConnection();
+		
+		if ( !$result ) return false; // File not saved somehow?
+		return $updatedFeeds;
 	}
 	
 	
@@ -87,20 +136,60 @@ class ParserManager {
 	 * A utility function that parse contents from a source array then save info to database
 	 *
 	 * @param $sourceInfo The source array, containing evertying needs to parseContent
+	 * @param $dbm A database object so we don't need to reconnect :)
+	 * @returns Array/Null Array if content is parsed. Null if nothing is parsed
 	 */
-	private static function parseFeedsAndSaveToDatabase($sourceInfo) {
+	private static function parseFeedsAndSaveToDatabase($sourceInfo, $dbm) {
+		
+		// Some variables
 		$sourceID = $sourceInfo['id'];
-		$sourceTitle = $sourceInfo['title'];
 		$sourceLink = $sourceInfo['link'];
 		$sourceParser = $sourceInfo['parser'];
-			
+		$isNewDBM = !$dbm;
+		$dbm = $dbm ? $dbm : new DatabaseManager();
+		$category = $sourceInfo['title'];	// Category defaults to source title
+		
 		// Parse content from feed source
+		$result = NULL;
+		switch ( $sourceParser ) {
+			case 'RSS':
+				$result = RSSParser::parseRSSSource($sourceLink, $sourceID, $category);
+				break;
+			case 'CommercePortal':
+				$result = CommerceParser::parsePortalContent($sourceLink, $sourceID);
+				break;
+			default:
+				// Defaults to rss
+				$result = RSSParser::parseRSSSource($sourceLink, $sourceID, $category);
+		}
 		
+		// Return null if we parsed nothing
+		if ( !$result || count($result) == 0 ) { 
+			if ( $isNewDBM ) { $dbm->closeConnection; }
+			return NULL; 
+		}
 		
-		// Saved parsed content to database
+		// Saved unique parsed content to database
+		$dbm->executeQuery("SELECT title FROM feeds WHERE sourceID=" . $sourceID . " ORDER BY pubDate DESC LIMIT 0, " . count($result));
+		$oldFeeds = $dbm->getAllRows(MYSQLI_NUM);
 		
+		// Adjust our old array to the right format
+		$adjustedOldFeed = array();
+		foreach ( $oldFeeds as $oneFeed ) {
+			$adjustedOldFeed[] = $oneFeed[0];
+		}
 		
-		return $parsedFeeds;
+		for ( $i = 0; $i < count($result); $i++ ) {
+			
+			// Insert our assoc array into the database only if its not in the database
+			// We determine duplicate by feed's title. This should work since we compare it with only recent feeds.
+			if ( !in_array($result[$i]['title'], $adjustedOldFeed) ) {
+				$dbm->insertRecords('feeds', $result[$i]);
+			}
+		}
+		
+		if ( $isNewDBM ) { $dbm->closeConnection; }
+		return $result;
 	}
 	
 	/**
@@ -108,13 +197,14 @@ class ParserManager {
 	 *
 	 * @returns Array the cached feeds in an assoc array
 	 */
-	private static function getFeedsFromSource($source) {
-		$jsonContent = file_get_contents(ParserManager::getCachePathForSource($source));
+	private static function getCacheForSource($sourceName) {
+		$jsonContent = file_get_contents(ParserManager::getCachePathForSource($sourceName));
 		return json_decode($jsonContent, true);
 	}
 	
 	/** 
    * Get the absolute path to the cache folder for the specified source.
+	 * This class determines the file name of a cached source feeds
 	 *
 	 * @param $sourceName Name of the source
 	 * @returns String the source's absolute path
@@ -122,7 +212,24 @@ class ParserManager {
 	private static function getCachePathForSource($sourceName) {
 		// Remove spaces from source. Ex: Commerce Feeds to CommerceFeeds
 		$sourceName = str_replace(" ", "", $sourceName);
-		return ParserManager::$CacheFolder . $sourceName . '.json';
+		return $_SERVER["DOCUMENT_ROOT"] . '/cache/' . $sourceName . '.json';
+	}
+	
+	/**
+	 * Get most recent feeds from database and cache the results
+	 * This method should be called whenever the database is updated
+	 *
+	 */
+	private static function updateCacheForSource($sourceInfo, $dbm) {
+		$isNewDB = $dbm == NULL;
+		$dbm = $dbm ? $dbm : new DatabaseManager();
+		
+		$dbm->executeQuery("SELECT * FROM feeds WHERE sourceID=" . $sourceInfo['id'] .
+											 " ORDER BY pubDate DESC LIMIT 0," . ParserManager::$MaxCachedFeeds);
+		$updatedFeeds = $dbm->getAllRows();
+		$cachePath = ParserManager::getCachePathForSource($sourceInfo['title']);
+		if ( $isNewDB ) { $dbm->closeConnection(); }
+		return ( file_put_contents($cachePath, $updatedFeeds) ) ? true : false;
 	}
 }
 

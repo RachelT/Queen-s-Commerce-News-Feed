@@ -1,9 +1,8 @@
 <?php
 
-require_once('../libraries/simple_html_dom.php');
-require_once('../helpers/GeneralUtils.php');
-require_once('../helpers/NetworkUtils.php');
-require_once('../helpers/RestUtils.php');
+require_once(dirname(__FILE__) . '/../libraries/simple_html_dom.php');
+//require_once('../helpers/GeneralUtils.php');
+require_once(dirname(__FILE__) . '/../helpers/NetworkUtils.php');
 
 /**
  * Provides functions to parse feeds from RSS sources
@@ -20,13 +19,13 @@ class RSSParser {
 	 * @param $category An optional category for the parsed feeds. If not provided, the rss feed's channel tag is used.
 	 * @returns Array An array of the parsed data
 	 */
-	public static function parseRSSSource($url, $category)
+	public static function parseRSSSource($url, $sourceID, $category)
 	{
 		$content = NetworkUtils::getContentFromUrl($url);
 		$feeds = str_get_html($content)->find('item');
 		$results = array();
 		
-		// Get feed category if not supplied
+		// Get feed category from rss if not supplied
 		if ( $category == NULL ) {
 			$category = str_get_html($content)->find('title', 0)->plaintext;
 			
@@ -70,6 +69,9 @@ class RSSParser {
 				$oneResult['category'] = $category;
 			}
 			
+			// Set feed sourceID
+			$oneResult['sourceID'] = $sourceID;
+				
 			$results[] = $oneResult;
 		}
 		

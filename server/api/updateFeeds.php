@@ -4,7 +4,7 @@
  * This script updates all of our feeds and save it
  */
  
-require_once('../classes/parsers/RSSParser.php');
+require_once('../classes/parsers/rssparser.php');
 require_once('../classes/helpers/RestUtils.php');
 
 define('ENVIRONMENT', 'DEVELOPMENT');

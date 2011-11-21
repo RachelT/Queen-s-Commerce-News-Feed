@@ -43,7 +43,11 @@ class DatabaseManager {
 	 */
 	public function getAllRows($type = MYSQLI_ASSOC)
 	{
-		return $this->lastQuery->fetch_all(MYSQLI_ASSOC);
+		$result = array();
+		while ( ($oneRow = $this->lastQuery->fetch_array($type)) != NULL ) {
+			$result[] = $oneRow;
+		}
+		return $result;
 	}
 	
 	/**
@@ -57,7 +61,7 @@ class DatabaseManager {
 	{
 		$limit = ($limit == '') ? '' : 'Limit ' . $limit;
 		$delete = "DELETE FROM {$table} WHERE {$contion} {$limit}";
-		if ( $environment != 'PRODUCTION' )
+		if ( $this->environment != 'PRODUCTION' )
 			echo $delete . "<br />";
 		$this->executeQuery($delete);
 	}
@@ -82,7 +86,7 @@ class DatabaseManager {
 			$update .= "WHERE " . $condition;	
 		}
 		
-		if ( $environment != 'PRODUCTION' )
+		if ( $this->environment != 'PRODUCTION' )
 			echo $update;
 		$this->executeQuery($update);
 	}
@@ -111,7 +115,7 @@ class DatabaseManager {
 		
 		$insert = "INSERT INTO $table ({$fields}) VALUES({$values}) ";
 		
-		if ( $environment != 'PRODUCTION' )
+		if ( $this->environment != 'PRODUCTION' )
 			echo $insert . "<br />";
 		
 		$this->executeQuery($insert);
@@ -159,6 +163,13 @@ class DatabaseManager {
 	public function getInsertID()
 	{
 		return $this->mysqli->insert_id;	
+	}
+	
+	/**
+	 * Closes the current database connection
+	 */
+	public function closeConnection() {
+		return $this->mysqli->close();
 	}
 }
 

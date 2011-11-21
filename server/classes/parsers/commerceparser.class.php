@@ -1,9 +1,8 @@
 <?php
 
-require_once('../libraries/simple_html_dom.php');
-require_once('../helpers/GeneralUtils.php');
-require_once('../helpers/NetworkUtils.php');
-require_once('../helpers/RestUtils.php');
+require_once(dirname(__FILE__) . '/../libraries/simple_html_dom.php');
+require_once(dirname(__FILE__) . '/../helpers/GeneralUtils.php');
+require_once(dirname(__FILE__) . '/../helpers/NetworkUtils.php');
 
 /**
  * Provides functions to parse feeds from the commerce portal
@@ -18,20 +17,19 @@ class CommerceParser {
 	 * Parses the feeds on the commerce portal
 	 * @return Array An array of the feeds
 	 */
-	public static function parsePortalContent()
+	public static function parsePortalContent($url, $sourceID)
 	{	
 		// Prepare the content
-		$url = 'https://commerce.queensu.ca/commerce/2006/commerce.nsf/homepage';
 		$content = NetworkUtils::getContentFromUrl($url);
-		$categories = str_get_html($content)->find('.announText');
+		$categories = str_get_html($content)->find('#announ, .announText');
 		$feeds = array();
 		$catTitles = array('Administrative', 'Career', 'AMS', 'General', 'Research Pool');
-		
+
 		// Get our feeds
 		$categoryNum = 0;
 		foreach ( $categories as $oneCategory ) {
 			$feedsNode = $oneCategory->find('a');
-			$category = $categories[$categoryNum];
+			$category = $catTitles[$categoryNum];
 			foreach ( $feedsNode as $feed ) {
 				
 				$oneResult = array();
@@ -62,13 +60,16 @@ class CommerceParser {
 				// Set feed category
 				$oneResult['category'] = $category;
 				
+				// Set feed sourceID
+				$oneResult['sourceID'] = $sourceID;
+				
 				$feeds[] = $oneResult;
 			} // End one category
 			
 			$categoryNum++;
 		} // End categories
 		
-		return $resultData;
+		return $feeds;
 	}
 }
 
