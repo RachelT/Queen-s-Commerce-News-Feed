@@ -1,7 +1,10 @@
 <?php
 	
 /**
- * Utility functions that can be used anywhere
+ * General utility functions that is used in web apps
+ *
+ * @author Draco Li
+ * @version 1.0
  */
 class GeneralUtils {
 	

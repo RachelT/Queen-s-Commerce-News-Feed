@@ -10,6 +10,7 @@ CREATE TABLE feeds_table (
 	link CHAR(255),
 	author CHAR(255),
 	pubDate DATETIME,
+	category CHAR(255),
 	sourceID INT(11) NOT NULL
 );
 

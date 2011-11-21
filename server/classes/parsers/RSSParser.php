@@ -2,8 +2,8 @@
 
 require_once('../libraries/simple_html_dom.php');
 require_once('../helpers/GeneralUtils.php');
+require_once('../helpers/NetworkUtils.php');
 require_once('../helpers/RestUtils.php');
-require_once('../helpers/URLConnect.php');
 
 /**
  * Provides functions to parse feeds from RSS sources
@@ -17,53 +17,63 @@ class RSSParser {
 	 * This is the method that does all the work!
 	 * 
 	 * @param $url The link of the rss source
-	 * @param $category An optional category for the parsed feeds
-	 * @returns Array An array with the parsed data
+	 * @param $category An optional category for the parsed feeds. If not provided, the rss feed's channel tag is used.
+	 * @returns Array An array of the parsed data
 	 */
 	public static function parseRSSSource($url, $category)
 	{
-		$content = FeedParser::getContentFromUrl($url);
+		$content = NetworkUtils::getContentFromUrl($url);
 		$feeds = str_get_html($content)->find('item');
-		$resultData = array();
+		$results = array();
+		
+		// Get feed category if not supplied
+		if ( $category == NULL ) {
+			$category = str_get_html($content)->find('title', 0)->plaintext;
+			
+			// Remove the words rss in the title if any
+			$category  = str_ireplace('rss', '', $category);
+		}
 		
 		foreach ( $feeds as $feed ) {
 			
 			$oneResult = array();
 			
 			// Get feed date
-			$dateString = $feed->find('pubDate', 0)->plaintext;
-			$date = (int)strtotime($dateString);
-			$oneResult['date'] = $date;
+			if ( $dateString = $feed->find('pubDate', 0) ) {
+				$date = (int)strtotime($dateString->plaintext);
+				$oneResult['pubDate'] = $date;
+			}
 			
 			// Get feed title
-			$title = $feed->find('title', 0)->plaintext;
-			$oneResult['title'] = $title;
-		
-			// Get feed status - new, default
-			$oneResult['status'] = 'default';
+			if ( $title = $feed->find('title', 0) ) {
+				$oneResult['title'] = $title->plaintext;
+			}
 			
 			// Get feed url	
-			$theUrl = $feed->find('guid', 0)->plaintext;
-			$oneResult['url'] = $theUrl;
+			if ( $theUrl = $feed->find('link', 0) ) {
+				$oneResult['link'] = $theUrl->plaintext;
+			}
 			
 			// Get feed description
-			$description = $feed->find('description', 0)->plaintext;
-			$description = FeedParser::cleanUpDescription($description);
-			$oneResult['description'] = $description;
+			if ( $description = $feed->find('description', 0) ) {
+				$description = RSSParser::cleanUpDescription($description->plaintext);
+				$oneResult['description'] = $description;
+			}
 			
-			// We also associate a hash for each feed - used for identifying feeds
-			// Note that this is not foolproof since its possible for two feeds to have same title (unlikely though)
-			$oneResult['identifier'] = md5($title);
-				
-			$resultData[$category][] = $oneResult;
+			// Get feed author
+			if ( $author = $feed->find('author', 0) ) {
+				$oneResult['author'] = $author->plaintext;
+			}
+			
+			// Get feed category
+			if ( strlen($category) > 0 ) {
+				$oneResult['category'] = $category;
+			}
+			
+			$results[] = $oneResult;
 		}
 		
 		return $resultData;
-	}
-	
-	private static function getContentFromUrl($url)
-	{
-		
 	}
 
 	private static function cleanUpDescription($description)
@@ -77,7 +87,7 @@ class RSSParser {
 			
 		// Remove empty paragraph tags
 		$description = preg_replace('/\<p\>\s*\<\/p\>/', '', $description);
-			
+		
 		// Remove read more paragrahs
 		$description = preg_replace('/\<p\>\s*\<a[^(\\\>)]*\>Read more(.)*\<\/a\>\s*\<\/p\>/', '', $description);	
 		
