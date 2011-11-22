@@ -1,9 +1,9 @@
 <?php
 
 require_once(dirname(__FILE__) . '/../libraries/simple_html_dom.php');
-//require_once('../helpers/GeneralUtils.php');
+require_once(dirname(__FILE__) . '/../helpers/GeneralUtils.php');
 require_once(dirname(__FILE__) . '/../helpers/NetworkUtils.php');
-
+require_once(dirname(__FILE__) . '/../helpers/DatabaseManager.php');
 /**
  * Provides functions to parse feeds from RSS sources
  *
@@ -33,6 +33,7 @@ class RSSParser {
 			$category  = str_ireplace('rss', '', $category);
 		}
 		
+		$dbm = new DatabaseManager();
 		foreach ( $feeds as $feed ) {
 			
 			$oneResult = array();
@@ -40,28 +41,28 @@ class RSSParser {
 			// Get feed date
 			if ( $dateString = $feed->find('pubDate', 0) ) {
 				$date = (int)strtotime($dateString->plaintext);
-				$oneResult['pubDate'] = $date;
+				$oneResult['pubDate'] = GeneralUtils::timeStampToMYSQLTime($date);
 			}
 			
 			// Get feed title
 			if ( $title = $feed->find('title', 0) ) {
-				$oneResult['title'] = $title->plaintext;
+				$oneResult['title'] = $dbm->sanitizeData($title->plaintext);
 			}
 			
-			// Get feed url	
-			if ( $theUrl = $feed->find('link', 0) ) {
-				$oneResult['link'] = $theUrl->plaintext;
+			// Get feed url	- somehow link tag doesn't return anything... Dunno why
+			if ( $theUrl = $feed->find('guid', 0) ) {
+				$oneResult['link'] = $dbm->sanitizeData($theUrl->plaintext);
 			}
 			
 			// Get feed description
 			if ( $description = $feed->find('description', 0) ) {
 				$description = RSSParser::cleanUpDescription($description->plaintext);
-				$oneResult['description'] = $description;
+				$oneResult['description'] = $dbm->sanitizeData($description);
 			}
 			
 			// Get feed author
 			if ( $author = $feed->find('author', 0) ) {
-				$oneResult['author'] = $author->plaintext;
+				$oneResult['author'] = $dbm->sanitizeData($author->plaintext);
 			}
 			
 			// Get feed category
@@ -74,8 +75,7 @@ class RSSParser {
 				
 			$results[] = $oneResult;
 		}
-		
-		return $resultData;
+		return $results;
 	}
 
 	private static function cleanUpDescription($description)
@@ -84,14 +84,14 @@ class RSSParser {
 		$description = str_replace('<![CDATA[', '', $description);
 		$description = str_replace(']]>', '', $description);
 			
-		// Remove description images
-		$description = preg_replace('/\<img[^(\>)]*\/\>/', '', $description);
-			
-		// Remove empty paragraph tags
-		$description = preg_replace('/\<p\>\s*\<\/p\>/', '', $description);
-		
 		// Remove read more paragrahs
 		$description = preg_replace('/\<p\>\s*\<a[^(\\\>)]*\>Read more(.)*\<\/a\>\s*\<\/p\>/', '', $description);	
+		
+		// Remove all tags
+		$description = strip_tags($description);
+		
+		// Trim the description
+		$description = trim($description);
 		
 		return $description;
 	}

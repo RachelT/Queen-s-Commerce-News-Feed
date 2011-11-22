@@ -1,26 +1,21 @@
 <?php
 
 /**
- * This script updates all of our feeds and save it
+ * Get feeds in a batch using an array of supplied params
  */
- 
-require_once('../classes/parsers/rssparser.php');
-require_once('../classes/helpers/RestUtils.php');
+require_once(dirname(__FILE__) . "/../classes/parsers/ParserManager.php");
+require_once(dirname(__FILE__) . "/../classes/helpers/RestUtils.php");
 
-define('ENVIRONMENT', 'DEVELOPMENT');
+// Update all feeds
+$results = ParserManager::updateAllFeeds();
 
-$result = array_merge(
-			FeedParser::parsePortalContent(), 
-			FeedParser::parseOtherSites('https://comsoc.queensu.ca/home/index.php?option=com_ninjarsssyndicator&feed_id=1&format=raw', 'Comsoc', ENVIRONMENT), 
-			FeedParser::parseOtherSites('http://dayonbay.ca/index.php/component/option,com_ninjarsssyndicator?feed_id=1&format=raw', 'DayOnBay', ENVIRONMENT)
-		  );
-
-// Save results to file
-file_put_contents('../cache/feeds.json', json_encode($result), LOCK_EX);	
-
-// Supply result to user based on environment
-if ( ENVIRONMENT == 'DEVELOPMENT' ) {
-	RestUtils::sendResponse(200, RestUtils::getHTTPHeader('Got it') . '<pre>' . print_r($result, true) . '</pre>' . RestUtils::getHTTPFooter());
+// Show all updated feeds if asked
+$show = $_GET['show'];
+if ( $show == 'true' ) {
+	$body = RestUtils::getHTTPHeader() . 
+					'<pre>' . print_r($results, true) . '</pre>' . 
+					RestUtils::getHTTPFooter();
+	RestUtils::sendResponse(200, $body);
 }
 
 ?>

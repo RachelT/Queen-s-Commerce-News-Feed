@@ -80,12 +80,19 @@ class GeneralUtils {
 	/**
 	 * Turns at date of formate m/d/y to stamp
 	 */
-	public static function naDateStringToStamp($dateString, $environment = 'PRODUCTION')
+	public static function naDateStringToStamp($dateString)
 	{
 		preg_match('/(\d+)\/(\d+)\/(\d+)/', $dateString, $matches);
 		$adjustedString = $matches[3] . '-' . $matches[1] . '-' . $matches[2];
 		$timeStamp = (int)strtotime($adjustedString);
-		return ($environment == 'PRODUCTION') ? $timeStamp : date('Y-m-d', $timeStamp);
+		return $timeStamp;
+	}
+	
+	/**
+	 * Returns the DATETIME of a timestamp. Used to store in sql database
+	 */
+	public static function timeStampToMYSQLTime($timestamp) {
+		return date('Y-m-d H:i:s', $timestamp);
 	}
 }
 ?>

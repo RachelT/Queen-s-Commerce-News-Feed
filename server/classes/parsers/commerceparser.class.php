@@ -3,6 +3,7 @@
 require_once(dirname(__FILE__) . '/../libraries/simple_html_dom.php');
 require_once(dirname(__FILE__) . '/../helpers/GeneralUtils.php');
 require_once(dirname(__FILE__) . '/../helpers/NetworkUtils.php');
+require_once(dirname(__FILE__) . '/../helpers/DatabaseManager.php');
 
 /**
  * Provides functions to parse feeds from the commerce portal
@@ -24,8 +25,9 @@ class CommerceParser {
 		$categories = str_get_html($content)->find('#announ, .announText');
 		$feeds = array();
 		$catTitles = array('Administrative', 'Career', 'AMS', 'General', 'Research Pool');
-
+		
 		// Get our feeds
+		$dbm = new DatabaseManager();
 		$categoryNum = 0;
 		foreach ( $categories as $oneCategory ) {
 			$feedsNode = $oneCategory->find('a');
@@ -41,24 +43,24 @@ class CommerceParser {
 				if ( $startpos >= 0 && $endpos >= 0 ) {
 					$date = substr($title, $startpos, $endpos - $startpos);
 					$date = GeneralUtils::naDateStringToStamp($date);
-					$oneResult['pubDate'] = $date;
+					$oneResult['pubDate'] = GeneralUtils::timeStampToMYSQLTime($date);
 					
 					// Adjust title
 					$title = trim($feed->find('strong', 1)->plaintext);
 				}else {
 					// No date is provided so we used the current time
-					$oneResult['pubDate'] = time();
+					$oneResult['pubDate'] = GeneralUtils::timeStampToMYSQLTime(time());
 				}
 				
 				// Get feed title
-				$oneResult['title'] = $title;
+				$oneResult['title'] = $dbm->sanitizeData($title);
 				
 				// Get feed url
 				$url = $feed->getAttribute('href');
-				$oneResult['link'] = $url;
+				$oneResult['link'] = $dbm->sanitizeData($url);
 				
 				// Set feed category
-				$oneResult['category'] = $category;
+				$oneResult['category'] = $dbm->sanitizeData($category);
 				
 				// Set feed sourceID
 				$oneResult['sourceID'] = $sourceID;
