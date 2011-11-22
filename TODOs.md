@@ -10,6 +10,7 @@ TODOs
 7. <del>Implement new feed mechanism in extension (not server), EX: date < 12hr is new</del>
 8. <del>Add my social buttons! Link it to my twitter and the project fb page</del>
 9. <del>Implement feedback<del/>
+9.5 Completely rewrite server stuff to make sure conforms to MVC and is optimized for efficiency
 10. Caching support - offline viewing
 11. Implement better date retrieval mechanism for server (if hrs and min not provided used retrieved time)
 12. Work on server. Store all feeds in own database, API that gets info from database and convert to json.
