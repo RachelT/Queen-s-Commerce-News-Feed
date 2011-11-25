@@ -23,7 +23,17 @@ foreach ( $variables as $key=>$value ) {
 	}
 }
 
-//ParserManager::getFeedsFromSources($sources, $options);
-ParserManager::updateAllFeeds();
+$results = ParserManager::getFeedsForCategories($sources, $options);
+
+// Testing
+$body = RestUtils::getHTTPHeader();
+$body .= "<h3>Sources</h3><pre>" . print_r($sources, true) . "</pre>";
+$body .= "<h3>Options</h3><pre>" . print_r($options, true) . "</pre>";
+$body .= "<h3>Content</h3><pre>" . print_r($results, true) . "</pre>";
+$body .= RestUtils::getHTTPFooter();
+RestUtils::sendResponse(200, $body);
+
+// Production
+//RestUtils::sendResponse(200, $results, '', 'application/json');
 
 ?>

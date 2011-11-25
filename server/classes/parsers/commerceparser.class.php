@@ -14,6 +14,8 @@ require_once(dirname(__FILE__) . '/../helpers/DatabaseManager.php');
  */
 class CommerceParser {
 	
+	public static $categories = array('Administrative', 'Career', 'AMS', 'General', 'Research Pool');
+	
 	/**
 	 * Parses the feeds on the commerce portal
 	 * @return Array An array of the feeds
@@ -22,16 +24,15 @@ class CommerceParser {
 	{	
 		// Prepare the content
 		$content = NetworkUtils::getContentFromUrl($url);
-		$categories = str_get_html($content)->find('#announ, .announText');
+		$categoryNodes = str_get_html($content)->find('#announ, .announText');
 		$feeds = array();
-		$catTitles = array('Administrative', 'Career', 'AMS', 'General', 'Research Pool');
 		
 		// Get our feeds
 		$dbm = new DatabaseManager();
 		$categoryNum = 0;
-		foreach ( $categories as $oneCategory ) {
+		foreach ( $categoryNodes as $oneCategory ) {
 			$feedsNode = $oneCategory->find('a');
-			$category = $catTitles[$categoryNum];
+			$category = CommerceParser::$categories[$categoryNum];
 			foreach ( $feedsNode as $feed ) {
 				
 				$oneResult = array();
@@ -60,7 +61,7 @@ class CommerceParser {
 				$oneResult['link'] = $dbm->sanitizeData($url);
 				
 				// Set feed category
-				$oneResult['category'] = $dbm->sanitizeData($category);
+				$oneResult['category'] = $category;
 				
 				// Set feed sourceID
 				$oneResult['sourceID'] = $sourceID;

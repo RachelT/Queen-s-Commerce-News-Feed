@@ -28,7 +28,7 @@ class ParserManager {
 	 * @param $options Includes the type of response we want. ex: 'json', 'array', 'object'
 	 * @returns The specified result
 	 */
-	public static function getFeedsFromSources($sources, $options) {
+	public static function getFeedsForCategories($sources, $options) {
 			
 			// Set some defaults
 			$options['type'] = $options['type'] ? $options['type'] : 'json';
@@ -36,20 +36,25 @@ class ParserManager {
 			// Results key is the source user specified (source title). The value is a feeds array
 			$results = array();
 			foreach ( $sources as $title=>$amount ) {
-				$result = ParserManager::getCacheForSource($tile);
+				
+				// Get result and turn into an object so we can get amoutn of feeds
+				$results = ParserManager::getCacheForSource($tile);
+				$results = json_decode($result, true);
 				
 				// Check if user asked for more than we can afford
-				if ( count($result) < $amount) {
+				if ( count($results) < $amount) {
 					// If asked for more, we update cache with user's amount. Then we retreive cache again!
+					$sourceID = $results[0]['sourceID'];
 					$dbm = new DatabaseManager();
-					$dbm->executeQuery("SELECT * FROM sources WHERE title='$title'");
+					$dbm->executeQuery("SELECT * FROM sources WHERE id=$sourceID");
 					$sourceInfo = $dbm->getRow();
 					if ( ParserManager::updateCacheForSource($sourceInfo, NULL, $amount) ) {
-						$result = ParserManager::getCacheForSource($tile);
+						$results = ParserManager::getCacheForSource($tile);
+						$results = json_decode($results, true);
 					}
 				}
 				
-				$result = array_slice($result, 0, $amount);
+				$result = array_slice($results, 0, $amount);
 				$results[$title] = $result;
 			}
 			
@@ -88,10 +93,34 @@ class ParserManager {
 	}
 	
 	/**
+	 * Returns all the sources available in our database
+	 *
+	 * @param String $format User's required format.
+	 * @returns data The data in formate specified by user
+	 */ 
+	public static function getAllSources($format = 'json') {
+		$results = ParserManager::getCacheForSource(ParserManager::$SourcesName);
+		
+		// Change result to formate specified by user
+		switch ($options['type']) {
+			case 'json':
+				$results = json_encode($results);
+				break;
+			case 'array':
+				// Results is already in array (assoc)
+				break;
+			case 'object':
+				$results = json_decode(json_encode($results));
+				break;
+		}
+		return $results;
+	}
+	
+	/**
 	 * Returns all the available feed sources in the database
 	 *
 	 * @param $dbm Database reuse! No wasting is allowed!
-	 * @returns Array the sources
+	 * @returns Array The sources array if successfull, else false
 	 */
 	public static function updateAllSources($dbm) {
 		$isNew = $dbm ? false : true;
@@ -102,11 +131,10 @@ class ParserManager {
 		if ( !$results || count($results) <= 0 ) { return false; }
 		
 		$sourcesPath = $_SERVER["DOCUMENT_ROOT"] . '/cache/' . ParserManager::$SourcesName . '.json';
-		file_put_contents($sourcesPath, $results);
 		
 		if ( $isNew ) { $dbm->closeConnection(); }
 		
-		return $results;
+		return file_put_contents($sourcesPath, json_encode($results)) ? $results : false;
 	}
 	
 	/**
@@ -229,22 +257,21 @@ class ParserManager {
 			$adjustedOldFeed[] = $dbm->sanitizeData($oneFeed[0]);
 		}
 		
-		/*
+		
 		echo "<pre>";
 		print_r($adjustedOldFeed);
 		echo "<hr>";
 		print_r($result);
 		echo "</pre>";
-		*/
 		for ( $i = 0; $i < count($result); $i++ ) {
 			
 			// Insert our assoc array into the database only if its not in the database
 			// We determine duplicate by feed's title. This should work since we compare it with only recent feeds.
 			if ( !in_array($result[$i]['title'], $adjustedOldFeed) ) {
 				$dbm->insertRecords('feeds', $result[$i]);
-				//echo "inserted!</br>";
+				echo "inserted!</br>";
 			}else {
-				//echo "duplicate!</br>";
+				echo "duplicate!</br>";
 			}
 		}
 		
@@ -258,8 +285,8 @@ class ParserManager {
 	 * @returns Array the cached feeds in an assoc array
 	 */
 	private static function getCacheForSource($sourceName) {
-		$jsonContent = file_get_contents(ParserManager::getCachePathForSource($sourceName));
-		return json_decode($jsonContent, true);
+		$jsonContent = file_get_contents(ParserManager::getCachePathForName($sourceName));
+		return $jsonContent;
 	}
 	
 	/** 
@@ -269,7 +296,7 @@ class ParserManager {
 	 * @param $sourceName Name of the source
 	 * @returns String the source's absolute path
 	 */
-	private static function getCachePathForSource($sourceName) {
+	private static function getCachePathForName($sourceName) {
 		// Remove spaces from source. Ex: Commerce Feeds to CommerceFeeds
 		$sourceName = str_replace(" ", "", $sourceName);
 		return $_SERVER["DOCUMENT_ROOT"] . '/cache/' . $sourceName . '.json';
@@ -279,12 +306,18 @@ class ParserManager {
 	 * Get most recent feeds from database and cache the results
 	 * This method should be called whenever the database is updated
 	 *
-	 * @param $sourceInfo Includes sourceID and source 
-	 * @param $amount An optional amount on how many feeds to cache.
-	 * @param $dbm Again, an optional DatabaseManager to encourage recycling
+	 * @param Array $sourceInfo Includes sourceID and source 
+	 * @param Int $amount An optional amount on how many feeds to cache.
+	 * @param Object $dbm Again, an optional DatabaseManager to encourage recycling
 	 * @return Boolean True if content saved successfully
 	 */
 	private static function updateCacheForSource($sourceInfo, $dbm, $amount = NULL) {
+		
+		// Since all portal feeds in under 1 source we will do some tricks here to separate them
+		if ( $sourceInfo['title'] == 'Commerce Portal' ) {
+			return updateCacheForCommPortal($dbm, $amount = NULL);
+		}
+		
 		$isNewDB = $dbm ? false : true;
 		$dbm = $dbm ? $dbm : new DatabaseManager();
 		$amount = $amount ? $amount : ParserManager::$MaxCachedFeeds;
@@ -292,9 +325,33 @@ class ParserManager {
 		$dbm->executeQuery("SELECT * FROM feeds WHERE sourceID=" . $sourceInfo['id'] .
 											 " ORDER BY pubDate DESC LIMIT 0," . $amount);
 		$updatedFeeds = $dbm->getAllRows();
-		$cachePath = ParserManager::getCachePathForSource($sourceInfo['title']);
+		$cachePath = ParserManager::getCachePathForName($sourceInfo['title']);
 		if ( $isNewDB ) { $dbm->closeConnection(); }
-		return ( file_put_contents($cachePath, $updatedFeeds) ) ? true : false;
+		return ( file_put_contents($cachePath, json_encode($updatedFeeds)) ) ? true : false;
+	}
+	
+	/**
+	 * This is a special function that only handles caching feeds from commerce portal source.
+	 * The reason is because commerce portal has a number of categories below it.
+	 * Note: We should develop a mechansim in the future that can update any source with sub-categories.
+	 *
+	 * @returns void
+	 */
+	private static function updateCacheForCommPortal($dbm, $amount = NULL) {
+		$isNewDB = $dbm ? false : true;
+		$dbm = $dbm ? $dbm : new DatabaseManager();
+		$amount = $amount ? $amount : ParserManager::$MaxCachedFeeds;
+		
+		// Update cache for all categories in commerce portal source
+		$categories = CommerceParser::$categories;
+		for ( $i = 0; $i < count($categories); $i++ ) {
+			$category = $categories[$i];
+			$dbm->executeQuery("SELECT * FROM feeds WHERE category=" . $category .
+											 " ORDER BY pubDate DESC LIMIT 0," . $amount);
+			$updatedFeeds = $dbm->getAllRows();
+			$cachePath = ParserManager::getCachePathForName($category);
+			file_put_contents($cachePath, json_encode($updatedFeeds));
+		}
 	}
 }
 
