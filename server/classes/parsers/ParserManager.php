@@ -257,7 +257,6 @@ class ParserManager {
 			$adjustedOldFeed[] = $dbm->sanitizeData($oneFeed[0]);
 		}
 		
-		
 		echo "<pre>";
 		print_r($adjustedOldFeed);
 		echo "<hr>";

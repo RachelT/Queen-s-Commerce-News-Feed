@@ -27,12 +27,15 @@ Objectives
 4. Basic feed viewing (open another tab). No previews
 5. Sharing functionality
 
+**-- After Milestone one, beta launches --**
+
 **Milestone 2**
 
-1. Rewritten JavaScript using Backbone.js
-2. Support adding rss feeds
+1. Rewrite JavaScript using Backbone.js
+2. Support adding rss feeds from user
 3. Preview function for feeds
-
+4. Faster speed
+5. Improved UI and more customizable areas
 
 License
 -------
