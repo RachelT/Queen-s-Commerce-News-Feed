@@ -10,10 +10,15 @@ TODOs
 7. <del>Implement new feed mechanism in extension (not server), EX: date < 12hr is new</del>
 8. <del>Add my social buttons! Link it to my twitter and the project fb page</del>
 9. <del>Implement feedback<del/>
-9.5 Completely rewrite server stuff to make sure conforms to MVC and is optimized for efficiency
-10. Caching support - offline viewing
-11. Implement better date retrieval mechanism for server (if hrs and min not provided used retrieved time)
-12. Work on server. Store all feeds in own database, API that gets info from database and convert to json.
-13. JavaScript optimization is defered to the last step since I'm in the progress of going over advanced JavaScript. _(Second milestone)_
-14. Implement unit testing in milestone two.
-15. Use JSON for local storage in milestone two.
+
+Unsorted TODOs
+--------------
+* Links right now good looks overall, but is hard to read. 
+* Cannot see too many feeds on a single screen. Provide user option to change height? More compact?
+* Completely rewrite server stuff to make sure conforms to MVC and is optimized for efficiency
+* Caching support - offline viewing
+* Implement better date retrieval mechanism for server (if hrs and min not provided used retrieved time)
+* Work on server. Store all feeds in own database, API that gets info from database and convert to json.
+* JavaScript optimization is defered to the last step since I'm in the progress of going over advanced JavaScript. _(Second milestone)_
+* Implement unit testing in milestone two.
+* Use JSON for local storage in milestone two.
