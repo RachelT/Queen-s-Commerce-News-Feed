@@ -12,14 +12,14 @@ Server
 3. **API**
 
 
-#####Database#####
+####Database####
 The server code is written in PHP and handles retrieving and parsing the feeds used by the chrome extension. All feeds parsed by our server is stored in our MYSQL database under the feeds table. The exact schema of our MYSQL database can be found under server/database/schema.sql
 
-#####Parser#####
+####Parser####
 Parsing of the different sources is handled by parser classes located under server/classes/parsers. Currently most of our feeds our rss feeds that can be parsed using the rssparser class. However, for feeds that are not rss (the commerce portal feeds), a class can be constructed to handle parsing of these feeds. Right now we did not implement an abstract class that specify the common interface of these parsers. In the future this should be implemented to allow more parses to be constructed and used.
 The Parser Manager act as an interface that to our api client. The Parser Manager handles parsing any url link passed to it by using the parser classes. The Parser Manager also handles database interactions such as saving and loading from the database when needed.
 
-#####API#####
+####API####
 The api directory contains various php files that the client calls upon to get feeds from our database. All results are returned in json format using the helper class RestUtils.
 Below is a breakdown of the apis we currently provide:
 **getFeed.php:** Handles getting a single feed from the database. From example, this file can handle getting the most recent feed of a certain category.
@@ -30,13 +30,13 @@ Below is a breakdown of the apis we currently provide:
 Extension
 ---------
 
-#### The extension has three main components ####
+### The extension has three main components ###
 1. **Markup**
 2. **Layout**
 3. **Logic**
 
 
-#####Markup#####
+####Markup####
 The markup is under the views directory. The markup is written in html and has three main files:
 **background.html:** This script operates in the background when our extension is opened. Currently this script does two things. 
 1. Open the options page when application is installed
@@ -44,9 +44,9 @@ The markup is under the views directory. The markup is written in html and has t
 **options.html:** This script handles displaying our options view. Which contains configurations to allow users to customize their feeds.
 **popup.html:** This script handles displaying our extension and communicating with our javascript. Currently a lot of javascript is embedded in this script, in the future great effort will be made to reduce the amount of javascript contained in this file.
 
-#####Layout#####
+####Layout####
 Layout of the markup files is written in [less](http://lesscss.org/), which compiles to the css in the css folder. [Bootstrap](http://twitter.github.com/bootstrap/) and [jQuery UI](http://jqueryui.com/) is used to simply layout and to provide a consistent web app look to the extension :)
 
-#####Logic#####
+####Logic####
 The logic of the web app is written in javascript. [jQuery](http://jquery.com/) and [Bootstrap](http://twitter.github.com/bootstrap/) is used to provide some functionalities to the web app.
 Currently all logic is written in feeds.js. As a result this file is pretty long. In the future great efforts will be made to rewrite the extension using [backbone.js](http://documentcloud.github.com/backbone/) in order to benefit from the MVC pattern. 
