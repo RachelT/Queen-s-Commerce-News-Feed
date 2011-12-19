@@ -16,11 +16,11 @@ Server
 The server code is written in PHP and handles retrieving and parsing the feeds used by the chrome extension. All feeds parsed by our server is stored in our MYSQL database under the feeds table. The exact schema of our MYSQL database can be found under server/database/schema.sql
 
 ####Parser####
-Parsing of the different sources is handled by parser classes located under server/classes/parsers. Currently most of our feeds are rss feeds that can be parsed using the rssparser class. However, for feeds that are not rss (the commerce portal feeds), a class can be constructed to handle parsing of these feeds. Right now we did not implement an abstract class that specify the common interface of these parsers. In the future this should be implemented to allow more parsers to be constructed and used.
+Parsing of the different sources is handled by parser classes located under server/classes/parsers. Currently most of our feeds are RSS feeds that can be parsed using the rssparser class. However, for feeds that are not RSS (the Commerce portal feeds), a class can be constructed to handle parsing of these feeds. Right now we did not implement an abstract class that specify the common interface of these parsers. In the future this should be implemented to allow more parsers to be constructed and used.
 The Parser Manager acts as an interface to our API client. The Parser Manager handles parsing any url link passed to it by using the parser classes. The Parser Manager also handles database interactions such as saving and loading from the database when needed.
 
 ####API####
-The api directory contains various php files that the client calls upon to get feeds from our database. All results are returned in json format using the helper class RestUtils.
+The API directory contains various PHP files that the client calls upon to get feeds from our database. All results are returned in json format using the helper class RestUtils.
 Below is a breakdown of the apis we currently provide:
 **getFeed.php:** Handles getting a single feed from the database. From example, this file can handle getting the most recent feed of a certain category.
 **getFeeds.php:** Handles getting a batch of feeds from the database. This is used by our chrome extension to populate all its categories in the beginning.
